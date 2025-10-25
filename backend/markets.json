@@ -1,0 +1,62 @@
+[
+  {
+    "market_title": "By 2027-04-23, will the method of dynamic activation patching lead to a 90% restoration of safety performance in at least three different large language models as demonstrated in this paper?",
+    "resolution_date": "2027-04-23",
+    "bid_price": 0.75,
+    "ask_price": 0.82,
+    "paper_url": "http://arxiv.org/abs/2406.14144v2",
+    "paper_title": "Towards Understanding Safety Alignment: A Mechanistic Perspective from\n  Safety Neurons",
+    "pdf_url": "http://arxiv.org/pdf/2406.14144v2",
+    "safety_reasoning": "This paper addresses the critical issue of safety alignment in large language models, which is vital for ensuring that AI systems do not produce harmful content. By identifying and manipulating safety neurons, the research provides a mechanistic approach to enhancing model safety, thereby contributing to the overall safety of AI technologies.",
+    "price_reasoning": "The bid price reflects a strong confidence in the proposed method's efficacy, given the experimental results presented in the paper. The ask price accounts for potential variability in model responses and the challenges of generalizing results across different architectures, hence the spread indicates moderate uncertainty about the consistency of the findings across various LLMs.",
+    "keywords": "alignment, interpretability, mechanistic interpretability, safety"
+  },
+  {
+    "market_title": "By 2027-04-23, will the extended sparse autoencoder framework demonstrate improved recovery of smooth concepts in neural operators compared to traditional sparse autoencoders in a benchmark scientific computing task?",
+    "resolution_date": "2027-04-23",
+    "bid_price": 0.75,
+    "ask_price": 0.8,
+    "paper_url": "http://arxiv.org/abs/2509.03738v2",
+    "paper_title": "Sparse Autoencoder Neural Operators: Model Recovery in Function Spaces",
+    "pdf_url": "http://arxiv.org/pdf/2509.03738v2",
+    "safety_reasoning": "This paper addresses the interpretability and recovery capabilities of neural operators, which are crucial for understanding AI systems in scientific applications. Improved interpretability can lead to safer AI systems by ensuring that their decision-making processes are transparent and understandable.",
+    "price_reasoning": "The bid price reflects a strong confidence in the framework's capabilities based on the authors' claims and preliminary results, while the ask price accounts for potential variability in outcomes across different tasks and implementations, indicating some uncertainty in the generalizability of the findings.",
+    "keywords": "interpretability, mechanistic interpretability"
+  },
+  {
+    "market_title": "By 2027-04-23, will MechLight achieve at least 80% accuracy in identifying context pieces influencing model outputs across all tested scenarios?",
+    "resolution_date": "2027-04-23",
+    "bid_price": 0.75,
+    "ask_price": 0.85,
+    "paper_url": "http://arxiv.org/abs/2510.02629v2",
+    "paper_title": "Evaluation Framework for Highlight Explanations of Context Utilisation\n  in Language Models",
+    "pdf_url": "http://arxiv.org/pdf/2510.02629v2",
+    "safety_reasoning": "This paper addresses the opacity of context utilisation in language models, which is crucial for understanding AI decision-making processes. Improving the interpretability of AI systems can enhance user trust and safety by making model behaviors more transparent.",
+    "price_reasoning": "The bid price reflects a strong belief in MechLight's effectiveness based on the paper's findings, while the ask price accounts for potential variability in model performance across different contexts. The spread indicates some uncertainty regarding the generalizability of results across all scenarios.",
+    "keywords": "interpretability, mechanistic interpretability"
+  },
+  {
+    "market_title": "By 2027-04-23, will multimodal large language models demonstrate human-like pop-out effects in visual search tasks as measured by a standardized test?",
+    "resolution_date": "2027-04-23",
+    "bid_price": 0.75,
+    "ask_price": 0.82,
+    "paper_url": "http://arxiv.org/abs/2510.19678v1",
+    "paper_title": "I Spy With My Model's Eye: Visual Search as a Behavioural Test for MLLMs",
+    "pdf_url": "http://arxiv.org/pdf/2510.19678v1",
+    "safety_reasoning": "This paper is relevant to AI safety as it explores the perceptual capabilities of MLLMs, which can influence how these models interact with the real world. Understanding their visual processing mechanisms can help mitigate risks associated with their deployment in sensitive applications.",
+    "price_reasoning": "The bid price reflects a strong confidence in the findings of the paper, while the ask price accounts for potential variability in future research and model developments. The spread indicates moderate uncertainty about the consistency of these effects across different models and contexts.",
+    "keywords": "interpretability"
+  },
+  {
+    "market_title": "By 2027-04-23, will the layerwise logit lens analysis reveal distinct patterns in SQL query composition across at least three model layers?",
+    "resolution_date": "2027-04-23",
+    "bid_price": 0.75,
+    "ask_price": 0.82,
+    "paper_url": "http://arxiv.org/abs/2503.12730v5",
+    "paper_title": "TinySQL: A Progressive Text-to-SQL Dataset for Mechanistic\n  Interpretability Research",
+    "pdf_url": "http://arxiv.org/pdf/2503.12730v5",
+    "safety_reasoning": "This paper addresses mechanistic interpretability, which is crucial for understanding how AI systems make decisions. By improving interpretability, we can identify potential biases and ensure that AI systems operate safely and transparently.",
+    "price_reasoning": "The bid price reflects a moderate confidence that the analysis will reveal distinct patterns, given the structured approach of the study. The ask price indicates a slightly higher confidence due to the complexity of the models and the interpretability techniques used, leading to some uncertainty in the outcome.",
+    "keywords": "interpretability, mechanistic interpretability"
+  }
+]
