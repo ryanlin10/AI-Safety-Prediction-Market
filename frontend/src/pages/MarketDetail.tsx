@@ -223,13 +223,27 @@ const MarketDetail: React.FC = () => {
             const currentPrice = outcomePrice.current_price || 0;
             const amount = buyAmounts[outcome] || 10;
             const totalCost = (buyPrice * amount).toFixed(2);
+            
+            // Determine if this is Yes or No for coloring
+            const isYes = outcome.toLowerCase() === 'yes';
+            const isNo = outcome.toLowerCase() === 'no';
+            const outcomeClass = isYes ? 'outcome-yes' : isNo ? 'outcome-no' : '';
 
             return (
-              <div key={outcome} className="outcome-trading-card">
+              <div key={outcome} className={`outcome-trading-card ${outcomeClass}`}>
                 <div className="outcome-header">
                   <h3>{outcome}</h3>
-                  <div className="current-probability">
+                  <div className={`current-probability ${outcomeClass}`}>
                     {(currentPrice * 100).toFixed(1)}%
+                  </div>
+                </div>
+
+                <div className="vote-percentage-bar">
+                  <div 
+                    className={`vote-fill ${outcomeClass}`}
+                    style={{ width: `${(currentPrice * 100).toFixed(1)}%` }}
+                  >
+                    <span className="vote-label">{(currentPrice * 100).toFixed(1)}% votes</span>
                   </div>
                 </div>
 
@@ -258,7 +272,7 @@ const MarketDetail: React.FC = () => {
                   <button
                     onClick={() => handleBuyShares(outcome)}
                     disabled={buySharesMutation.isPending || market.status !== 'active'}
-                    className="buy-button"
+                    className={`buy-button ${outcomeClass}`}
                   >
                     {buySharesMutation.isPending ? 'Buying...' : `Buy ${outcome}`}
                   </button>

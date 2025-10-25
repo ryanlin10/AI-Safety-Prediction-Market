@@ -3,6 +3,10 @@
   color: #2c3e50;
 }
 
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
 .dashboard h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
@@ -12,14 +16,20 @@
 .subtitle {
   font-size: 1.2rem;
   color: #7f8c8d;
-  margin-bottom: 2rem;
   padding-left: 0.5rem;
+}
+
+/* Dashboard content with sidebar */
+.dashboard-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
 }
 
 /* Markets layout - scrollable grouped view */
 .markets-layout {
-  width: 100%;
-  margin-top: 2rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .topic-section {
@@ -131,6 +141,68 @@
   font-weight: 500;
 }
 
+/* Vote percentage chips for Yes/No - compact and filled */
+.market-outcomes-votes {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.outcome-vote-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.outcome-vote-chip .outcome-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.outcome-vote-chip .outcome-percentage {
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+/* Teal-green styling for Yes */
+.outcome-vote-chip.outcome-yes {
+  background: #4a9b8e;
+}
+
+.outcome-vote-chip.outcome-yes:hover {
+  background: #3d8275;
+  transform: scale(1.05);
+}
+
+/* Maroon styling for No */
+.outcome-vote-chip.outcome-no {
+  background: #9b4d6b;
+}
+
+.outcome-vote-chip.outcome-no:hover {
+  background: #823f59;
+  transform: scale(1.05);
+}
+
+/* Default blue styling for other outcomes */
+.outcome-vote-chip:not(.outcome-yes):not(.outcome-no) {
+  background: #5b9bd5;
+}
+
+.outcome-vote-chip:not(.outcome-yes):not(.outcome-no):hover {
+  background: #4a7fb8;
+  transform: scale(1.05);
+}
+
 .market-footer {
   display: flex;
   flex-direction: column;
@@ -151,6 +223,20 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .ranking-sidebar {
+    width: 100%;
+    position: static;
+    max-height: 500px;
+    order: -1;
+    margin-bottom: 2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .topic-heading {
     font-size: 1.4rem;
@@ -179,10 +265,32 @@
     font-size: 0.7rem;
     padding: 0.2rem 0.6rem;
   }
+
+  .outcome-vote-chip {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .outcome-vote-chip .outcome-percentage {
+    font-size: 0.75rem;
+  }
   
   .market-date,
   .popularity-score {
     font-size: 0.7rem;
+  }
+
+  .ranking-sidebar {
+    max-height: 400px;
+  }
+
+  .ranking-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .ranking-question {
+    font-size: 0.8rem;
   }
 }
 
@@ -194,5 +302,143 @@
   color: #7f8c8d;
   border: 1px solid #e1e8ed;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Popularity Ranking Sidebar */
+.ranking-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.ranking-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.25rem;
+  border-radius: 12px 12px 0 0;
+}
+
+.ranking-header h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.ranking-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.ranking-list {
+  background: white;
+  border: 2px solid #e1e8ed;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow-y: auto;
+  flex: 1;
+  max-height: calc(100vh - 10rem);
+}
+
+.ranking-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-bottom: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.ranking-item:hover {
+  background: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.ranking-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ranking-question {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+  color: #2c3e50;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ranking-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ranking-topic {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking-score {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #667eea;
+  white-space: nowrap;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.status-closed {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.status-resolved {
+  background-color: #f6ffed;
+  color: #52c41a;
 }
 
