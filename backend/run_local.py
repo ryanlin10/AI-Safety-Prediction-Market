@@ -6,7 +6,17 @@ Uses SQLite instead of PostgreSQL for simpler local development
 import os
 os.environ['FLASK_ENV'] = 'development'
 os.environ['DATABASE_URL'] = 'sqlite:///prediction_market.db'
-os.environ['OPENAI_API_KEY'] = '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'
+
+# Load OpenAI API key from environment variable or .env file
+# Set your key with: export OPENAI_API_KEY='your-key-here'
+# Or create a .env file in the backend directory
+if not os.environ.get('OPENAI_API_KEY'):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("⚠️  Warning: OpenAI API key not set. Set OPENAI_API_KEY environment variable.")
+        print("   Example: export OPENAI_API_KEY='your-key-here'")
 
 from app import create_app, db
 

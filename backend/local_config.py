@@ -16,7 +16,7 @@ class LocalConfig:
     CELERY_RESULT_BACKEND = ''
     
     # OpenAI Configuration
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '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')
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
     
     # Scraper Configuration
     ARXIV_MAX_RESULTS = 50

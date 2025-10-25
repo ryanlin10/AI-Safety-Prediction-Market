@@ -27,8 +27,6 @@ interface Investigation {
 }
 
 const AgentConsole: React.FC = () => {
-  const queryClient = useQueryClient();
-  const [selectedMarketId, setSelectedMarketId] = useState<number>(0);
   const [expandedInvestigation, setExpandedInvestigation] = useState<number | null>(null);
 
   const { data: agentsData, isLoading: agentsLoading } = useQuery({
@@ -36,27 +34,12 @@ const AgentConsole: React.FC = () => {
     queryFn: () => api.getAgents(),
   });
 
-  const { data: marketsData } = useQuery({
-    queryKey: ['markets'],
-    queryFn: () => api.getMarkets({ status: 'active' }),
-  });
-
   const { data: investigationsData, isLoading: investigationsLoading } = useQuery({
     queryKey: ['investigations'],
     queryFn: () => api.getInvestigations({ limit: 50 }),
   });
 
-  const placeInitialBetMutation = useMutation({
-    mutationFn: ({ agentId, marketId }: { agentId: number; marketId: number }) =>
-      api.placeInitialBet(agentId, marketId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['market'] });
-      alert('Agent bet placed successfully!');
-    },
-  });
-
   const agents: Agent[] = agentsData?.data?.agents || [];
-  const markets: Market[] = marketsData?.data?.markets || [];
   const investigations: Investigation[] = investigationsData?.data?.investigations || [];
   const researcherAgents = agents.filter((a) => a.agent_type === 'researcher');
 
