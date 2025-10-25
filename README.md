@@ -520,56 +520,6 @@ POST /api/agents/{id}/place_initial_bet
 
 ---
 
-## 📈 Performance Metrics
-
-### System Performance
-
-- **Claim Generation**: 5-10 seconds per claim
-- **Investigation**: 30-60 seconds for 5-stage analysis
-- **Code Generation**: 10-15 seconds for full test script
-- **Security Scan**: <10ms per scan
-- **Code Execution**: 0-30 seconds (user code dependent)
-- **API Response**: <100ms for most endpoints
-- **Frontend Load**: <500ms initial render
-- **Price Updates**: 5-second polling interval
-
-### Scalability
-
-- **Current**: Single-server SQLite (1000s of requests/day)
-- **Production**: PostgreSQL + Redis + Celery (100,000s requests/day)
-- **Docker**: Horizontal scaling with container orchestration
-- **CDN**: Static asset delivery for global users
-
----
-
-## 🧪 Testing & Quality
-
-### Test Coverage
-
-```bash
-# Backend unit tests
-cd backend
-pytest --cov=app tests/
-
-# Frontend component tests
-cd frontend
-npm test -- --coverage
-
-# Integration tests
-pytest tests/integration/
-
-# Security tests
-pytest tests/security/
-```
-
-### Continuous Integration
-
-- GitHub Actions for CI/CD
-- Automated testing on pull requests
-- Code quality checks (flake8, mypy, eslint)
-- Security scanning (npm audit, pip-audit)
-
----
 
 ## 🚢 Deployment
 
@@ -600,47 +550,8 @@ SENTRY_DSN=https://...
 AGENT_MAX_STAKE=100
 EXPERIMENT_TIMEOUT_MINUTES=10
 ```
-
-### Infrastructure Requirements
-
-**Minimum** (Development)
-- 2 CPU cores
-- 4GB RAM
-- 10GB storage
-
-**Recommended** (Production)
-- 4+ CPU cores
-- 8GB+ RAM
-- 50GB+ storage
-- Load balancer
-- CDN for static assets
-
 ---
 
-## 🔮 Future Enhancements
-
-### Short-term (Next Sprint)
-- [ ] User authentication with JWT
-- [ ] Portfolio tracking and leaderboards
-- [ ] Sell functionality for markets
-- [ ] WebSocket support for real-time updates
-- [ ] Advanced charting (candlesticks, volume)
-
-### Medium-term (Next Quarter)
-- [ ] ArXiv scraper integration
-- [ ] Multi-model support (Claude, Llama)
-- [ ] Collaborative workspaces
-- [ ] Market analytics dashboard
-- [ ] Mobile-responsive design improvements
-
-### Long-term (Next Year)
-- [ ] Reputation system for agents
-- [ ] Decentralized market resolution (DAO)
-- [ ] Machine learning for price prediction
-- [ ] Integration with academic databases (Semantic Scholar, OpenReview)
-- [ ] API marketplace for custom validators
-
----
 
 ## 📚 Documentation
 
@@ -652,28 +563,6 @@ EXPERIMENT_TIMEOUT_MINUTES=10
 - **[OpenAI Fix](OPENAI_FIX_SUMMARY.md)**: AI integration details
 - **[Security Scanner](SECURITY_SCANNER_FIX.md)**: Sandbox security
 - **[Code Generation](AI_CODE_GENERATION_FIX.md)**: AI code generation
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Areas we'd love help with:
-
-- **AI Models**: Add support for Claude, Llama, etc.
-- **Validators**: Create custom test harnesses
-- **Markets**: New market types and resolution mechanisms
-- **UI/UX**: Improve accessibility and mobile experience
-- **Testing**: Expand test coverage
-- **Documentation**: Improve guides and tutorials
-
-**Contribution Process**:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
 
 ---
 
@@ -709,26 +598,6 @@ We welcome contributions! Areas we'd love help with:
 
 ---
 
-## 📊 Project Stats
-
-- **Lines of Code**: ~15,000
-- **Files**: 60+ Python/TypeScript files
-- **API Endpoints**: 25+
-- **Database Models**: 10
-- **AI Services**: 4 (Claims, Investigation, Code Gen, Bettor)
-- **Security Features**: 5 layers
-- **Documentation Pages**: 8
-- **Development Time**: 3 weeks
-
----
-
-## 📞 Contact & Support
-
-- **GitHub**: [ryanlin10/AI-Safety-Prediction-Market](https://github.com/ryanlin10/AI-Safety-Prediction-Market)
-- **Issues**: [Create an issue](https://github.com/ryanlin10/AI-Safety-Prediction-Market/issues)
-- **Email**: contact@example.com (update with actual contact)
-
----
 
 ## 📄 License
 
