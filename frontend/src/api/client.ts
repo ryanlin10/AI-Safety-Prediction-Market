@@ -73,5 +73,34 @@ export const api = {
   
   getMarketExperiments: (marketId: number) =>
     apiClient.get(`/markets/${marketId}/experiments`),
+  
+  // Workspaces
+  createWorkspace: (data: { investigation_id?: number; agent_id?: number; name: string; description?: string; files?: any; generate_ai_code?: boolean }) =>
+    apiClient.post('/workspaces', data),
+  
+  getWorkspace: (workspaceId: number) =>
+    apiClient.get(`/workspaces/${workspaceId}`),
+  
+  getFiles: (workspaceId: number) =>
+    apiClient.get(`/workspaces/${workspaceId}/files`),
+  
+  getFile: (workspaceId: number, filePath: string) =>
+    apiClient.get(`/workspaces/${workspaceId}/file/${filePath}`),
+  
+  saveFile: (workspaceId: number, filePath: string, content: string) =>
+    apiClient.post(`/workspaces/${workspaceId}/file/${filePath}`, { content }),
+  
+  deleteFile: (workspaceId: number, filePath: string) =>
+    apiClient.delete(`/workspaces/${workspaceId}/file/${filePath}`),
+  
+  getWorkspaceRuns: (workspaceId: number) =>
+    apiClient.get(`/workspaces/${workspaceId}/runs`),
+  
+  // Runs
+  runWorkspace: (workspaceId: number) =>
+    apiClient.post(`/workspaces/${workspaceId}/run`),
+  
+  getRunStatus: (runId: number) =>
+    apiClient.get(`/runs/${runId}`),
 };
 

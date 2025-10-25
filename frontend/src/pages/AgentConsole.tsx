@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Agent } from '../types';
+import CodeIDE from '../components/CodeIDE';
 import './AgentConsole.css';
 
 interface Investigation {
@@ -27,7 +28,9 @@ interface Investigation {
 }
 
 const AgentConsole: React.FC = () => {
+  const queryClient = useQueryClient();
   const [expandedInvestigation, setExpandedInvestigation] = useState<number | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<number | null>(null);
 
   const { data: agentsData, isLoading: agentsLoading } = useQuery({
     queryKey: ['agents'],
@@ -42,6 +45,54 @@ const AgentConsole: React.FC = () => {
   const agents: Agent[] = agentsData?.data?.agents || [];
   const investigations: Investigation[] = investigationsData?.data?.investigations || [];
   const researcherAgents = agents.filter((a) => a.agent_type === 'researcher');
+
+  const createWorkspaceMutation = useMutation({
+    mutationFn: (data: { investigation_id: number; name: string }) => {
+      console.log('Creating workspace with AI code generation for investigation:', data.investigation_id);
+      return api.createWorkspace({
+        investigation_id: data.investigation_id,
+        name: data.name,
+        description: `AI-generated rigorous test for investigation ${data.investigation_id}`,
+        generate_ai_code: true  // Enable AI code generation
+      });
+    },
+    onSuccess: (response) => {
+      console.log('Workspace created successfully:', response);
+      console.log('Full response structure:', JSON.stringify(response, null, 2));
+      // Response structure: { data: { success: true, data: { id: X, explanation: "..." } } }
+      const workspaceData = response.data?.data || response.data;
+      const workspaceId = workspaceData?.id;
+      const explanation = workspaceData?.explanation;
+      
+      console.log('Extracted workspace ID:', workspaceId);
+      if (explanation) {
+        console.log('AI Explanation:', explanation);
+      }
+      
+      setActiveWorkspace(workspaceId);
+      
+      // Show success notification with explanation
+      if (explanation) {
+        setTimeout(() => {
+          alert(`🤖 AI Generated Test Code!\n\n${explanation}`);
+        }, 500);
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to create workspace:', error);
+      alert('Failed to create workspace: ' + (error as any).message);
+    }
+  });
+
+  const handleRigorousTest = (investigation: Investigation) => {
+    console.log('Rigorous Test clicked for investigation:', investigation.id);
+    createWorkspaceMutation.mutate({
+      investigation_id: investigation.id,
+      name: `Test: ${investigation.idea?.title || 'Investigation'}`
+    });
+  };
+
+  console.log('Active workspace:', activeWorkspace);
 
   const getConclusionColor = (conclusion: string) => {
     switch (conclusion) {
@@ -77,9 +128,39 @@ const AgentConsole: React.FC = () => {
   }
 
   return (
-    <div className="agent-console">
-      <h1>Agent Console</h1>
-      <p className="subtitle">Manage and monitor AI agents</p>
+    <>
+      {activeWorkspace !== null && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+          <CodeIDE
+            workspaceId={activeWorkspace}
+            onClose={() => {
+              console.log('Closing IDE');
+              setActiveWorkspace(null);
+            }}
+            onRunComplete={(run) => {
+              console.log('Run completed:', run);
+              queryClient.invalidateQueries({ queryKey: ['investigations'] });
+            }}
+          />
+        </div>
+      )}
+      
+      <div className="agent-console">
+        <h1>Agent Console</h1>
+        <p className="subtitle">Manage and monitor AI agents</p>
+        
+        {/* Debug indicator */}
+        {activeWorkspace !== null && (
+          <div style={{ 
+            padding: '10px', 
+            background: '#4CAF50', 
+            color: 'white', 
+            borderRadius: '5px',
+            margin: '10px 0'
+          }}>
+            🔬 IDE Active - Workspace ID: {activeWorkspace}
+          </div>
+        )}
 
       <div className="agents-section">
         <h2>Researcher Agents</h2>
@@ -165,6 +246,14 @@ const AgentConsole: React.FC = () => {
                     }
                   </span>
                   <button
+                    onClick={() => handleRigorousTest(inv)}
+                    disabled={createWorkspaceMutation.isPending}
+                    className="rigorous-test-btn"
+                    title="AI will automatically generate test code for this hypothesis"
+                  >
+                    {createWorkspaceMutation.isPending ? '🤖 AI Generating Code...' : '🤖 AI Rigorous Test'}
+                  </button>
+                  <button
                     onClick={() => setExpandedInvestigation(
                       expandedInvestigation === inv.id ? null : inv.id
                     )}
@@ -227,8 +316,9 @@ const AgentConsole: React.FC = () => {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
