@@ -6,6 +6,8 @@ from app.models.bet import Bet
 from app.models.agent import Agent
 from app.models.experiment import Experiment
 from app.models.investigation import Investigation
+from app.models.workspace import Workspace
+from app.models.run import Run
 
-__all__ = ['User', 'Source', 'Idea', 'Market', 'Bet', 'Agent', 'Experiment', 'Investigation']
+__all__ = ['User', 'Source', 'Idea', 'Market', 'Bet', 'Agent', 'Experiment', 'Investigation', 'Workspace', 'Run']
 

@@ -9,6 +9,9 @@ class Investigation(db.Model):
     idea_id = db.Column(db.Integer, db.ForeignKey('ideas.id'), nullable=False)
     agent_id = db.Column(db.Integer, db.ForeignKey('agents.id'), nullable=True)
     
+    # Relationships
+    idea = db.relationship('Idea', backref='investigations', lazy=True)
+    
     # Formalized claim
     formalized_claim = db.Column(db.Text, nullable=False)
     test_criteria = db.Column(db.Text)  # JSON string for SQLite
