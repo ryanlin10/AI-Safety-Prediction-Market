@@ -14,6 +14,7 @@
 ## 🎯 Problem Statement
 
 AI safety research faces critical challenges:
+- **Inefficient Research Markets**: Researchers aren't informed on AI safety research timelines
 - **Slow validation cycles**: Testing research claims takes weeks or months
 - **Scattered knowledge**: Research insights are fragmented across papers and preprints
 - **Limited incentives**: No clear market signals for valuable research directions
