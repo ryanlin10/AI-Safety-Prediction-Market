@@ -15,7 +15,7 @@ os.environ['FLASK_ENV'] = 'development'
 os.environ['DATABASE_URL'] = 'sqlite:///prediction_market.db'
 
 from app import create_app, db
-from app.models import Market, Idea, Source
+from app.models import Market, Idea, Source, Bet
 
 def load_markets_from_json():
     """Load markets from markets.json file"""
@@ -75,8 +75,8 @@ def load_markets_from_json():
                 close_date = None
             
             # Create outcomes based on bid/ask prices
-            # These are binary markets (YES/NO)
-            outcomes = json.dumps(['YES', 'NO'])
+            # These are binary markets (Yes/No)
+            outcomes = json.dumps(['Yes', 'No'])
             
             # Create the market
             market = Market(
@@ -92,10 +92,46 @@ def load_markets_from_json():
                 close_date=close_date
             )
             db.session.add(market)
+            db.session.flush()  # Get the market ID
             
-            print(f"   ✓ Created market with ID: {market.id if market.id else 'pending'}")
+            # Initialize market prices using bid/ask from JSON
+            bid_price = market_data.get('bid_price', 0.5)
+            ask_price = market_data.get('ask_price', 0.5)
+            
+            # Use the average of bid/ask as the initial YES price
+            yes_price = (bid_price + ask_price) / 2
+            no_price = 1.0 - yes_price
+            
+            # Create synthetic initial bets to establish market prices
+            initial_liquidity = 1000.0
+            
+            # Create initial bet for Yes outcome
+            yes_bet = Bet(
+                market_id=market.id,
+                user_id=1,  # System user
+                outcome='Yes',
+                stake=yes_price * initial_liquidity,
+                odds=yes_price,
+                rationale=f'Initial market seeding at {yes_price*100:.1f}%'
+            )
+            
+            # Create initial bet for No outcome
+            no_bet = Bet(
+                market_id=market.id,
+                user_id=1,  # System user
+                outcome='No',
+                stake=no_price * initial_liquidity,
+                odds=no_price,
+                rationale=f'Initial market seeding at {no_price*100:.1f}%'
+            )
+            
+            db.session.add(yes_bet)
+            db.session.add(no_bet)
+            
+            print(f"   ✓ Created market with ID: {market.id}")
             print(f"   📅 Resolution date: {market_data['resolution_date']}")
             print(f"   💰 Bid: {market_data['bid_price']}, Ask: {market_data['ask_price']}")
+            print(f"   📊 Initial prices - YES: {yes_price*100:.1f}%, NO: {no_price*100:.1f}%")
             print()
         
         # Commit all changes

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Market, Idea, Source
+from app.models import Market, Idea, Source, Bet
 from datetime import datetime
 import json
 import os
@@ -195,11 +195,53 @@ def generate_market_from_keyword():
     )
     
     db.session.add(market)
+    db.session.flush()  # Get the market ID before adding bets
+    
+    # Initialize market prices using bid/ask from JSON
+    # Create initial bets to set the market prices
+    bid_price = selected_market.get('bid_price', 0.5)  # Default to 50% if not provided
+    ask_price = selected_market.get('ask_price', 0.5)
+    
+    # Use the average of bid/ask as the initial YES price
+    yes_price = (bid_price + ask_price) / 2
+    no_price = 1.0 - yes_price
+    
+    # Create synthetic initial bets to establish market prices
+    # The bet amounts determine the initial liquidity pool ratios
+    # For a Kalshi-style market, we want the prices to reflect the probabilities
+    initial_liquidity = 1000.0  # Starting liquidity pool
+    
+    # Create initial bet for YES outcome
+    yes_bet = Bet(
+        market_id=market.id,
+        user_id=1,  # System user
+        outcome='Yes',
+        stake=yes_price * initial_liquidity,
+        odds=yes_price,
+        rationale=f'Initial market seeding at {yes_price*100:.1f}%'
+    )
+    
+    # Create initial bet for NO outcome
+    no_bet = Bet(
+        market_id=market.id,
+        user_id=1,  # System user
+        outcome='No',
+        stake=no_price * initial_liquidity,
+        odds=no_price,
+        rationale=f'Initial market seeding at {no_price*100:.1f}%'
+    )
+    
+    db.session.add(yes_bet)
+    db.session.add(no_bet)
     db.session.commit()
     
     return jsonify({
         'success': True,
         'market': market.to_dict(),
+        'initial_prices': {
+            'yes': yes_price,
+            'no': no_price
+        },
         'message': f'Generated market matching keyword: {keyword}'
     }), 201
 
