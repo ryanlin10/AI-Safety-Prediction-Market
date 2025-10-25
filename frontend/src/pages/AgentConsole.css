@@ -123,3 +123,248 @@
   overflow-x: auto;
 }
 
+
+/* Investigations Section */
+.investigations-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  color: #333;
+}
+
+.investigations-section h2 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.section-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.investigations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.investigation-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.investigation-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.investigation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.investigation-title {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.investigation-claim {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.investigation-conclusion {
+  flex-shrink: 0;
+  border: 3px solid;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  background: white;
+  min-width: 150px;
+}
+
+.conclusion-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.confidence-score {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.investigation-summary {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #667eea;
+}
+
+.investigation-summary strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.investigation-summary p {
+  margin: 0;
+  line-height: 1.6;
+  color: #495057;
+}
+
+.investigation-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.investigation-date {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.expand-btn {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.expand-btn:hover {
+  background: #764ba2;
+  transform: translateY(-1px);
+}
+
+.investigation-details {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #dee2e6;
+}
+
+.reasoning-steps,
+.evidence-section,
+.test-criteria {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.reasoning-steps h4,
+.evidence-section h4,
+.test-criteria h4 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.reasoning-steps ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.reasoning-step {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.reasoning-step:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.reasoning-step strong {
+  color: #667eea;
+  font-size: 1.05rem;
+}
+
+.reasoning-step p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  color: #495057;
+}
+
+.step-result {
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  border-left: 3px solid #4CAF50;
+}
+
+.step-result strong {
+  color: #2c3e50;
+}
+
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.evidence-item {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 3px solid #2196F3;
+}
+
+.evidence-item strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  text-transform: capitalize;
+}
+
+.evidence-item pre {
+  margin: 0;
+  padding: 0.75rem;
+  background: #2c3e50;
+  color: #ecf0f1;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.test-criteria ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.test-criteria li {
+  margin: 0.75rem 0;
+  line-height: 1.6;
+  color: #495057;
+}
+
+@media (max-width: 768px) {
+  .investigation-header {
+    flex-direction: column;
+  }
+
+  .investigation-conclusion {
+    width: 100%;
+  }
+}

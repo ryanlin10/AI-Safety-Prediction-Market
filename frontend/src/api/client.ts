@@ -21,6 +21,16 @@ export const api = {
   generateClaims: (count?: number, categories?: string[]) =>
     apiClient.post('/ideas/generate', { count, categories }),
   
+  // Investigations
+  getInvestigations: (params?: { status?: string; limit?: number; offset?: number }) =>
+    apiClient.get('/investigations', { params }),
+  
+  getInvestigation: (id: number) =>
+    apiClient.get(`/investigations/${id}`),
+  
+  createInvestigation: (ideaId: number) =>
+    apiClient.post(`/ideas/${ideaId}/investigate`),
+  
   // Markets
   getMarkets: (params?: { status?: string; limit?: number; offset?: number }) =>
     apiClient.get('/markets', { params }),
