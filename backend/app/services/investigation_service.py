@@ -1,144 +1,226 @@
 """
 Investigation Service
-Automates the process of formalizing and testing research claims
+Automates the process of formalizing and testing research claims using OpenAI
 """
-import random
-from typing import Dict, List, Tuple
+import json
 import time
+from typing import Dict, List, Tuple
+from openai import OpenAI
+from flask import current_app
 
 class InvestigationService:
-    """Service for automated claim investigation"""
+    """Service for automated claim investigation using OpenAI"""
+    
+    def __init__(self):
+        self.client = None
+    
+    def _get_client(self):
+        """Lazy initialization of OpenAI client"""
+        if self.client is None:
+            api_key = current_app.config.get('OPENAI_API_KEY')
+            if not api_key:
+                raise ValueError("OpenAI API key not configured")
+            self.client = OpenAI(api_key=api_key)
+        return self.client
     
     def formalize_claim(self, title: str, abstract: str, claim: str) -> Dict:
         """
-        Formalize a research claim into a testable hypothesis
-        In a real system, this would use an LLM
+        Formalize a research claim into a testable hypothesis using OpenAI
         """
-        # Simulate LLM processing
-        formalized = {
-            'formalized_claim': f"Testable Hypothesis: {claim}",
-            'test_criteria': [
-                'Reproducibility: Can the experiment be replicated?',
-                'Statistical Significance: Does the result meet p < 0.05?',
-                'Effect Size: Is the improvement practically significant?',
-                'Generalization: Does it work across different scenarios?'
-            ]
-        }
+        client = self._get_client()
         
-        return formalized
+        prompt = f"""You are an AI research scientist specializing in formalizing research claims into testable hypotheses.
+
+Given the following research paper information:
+
+Title: {title}
+
+Abstract: {abstract}
+
+Extracted Claim: {claim}
+
+Your task is to:
+1. Formalize this claim into a clear, testable hypothesis
+2. Define 4-6 specific test criteria that would be needed to verify or falsify this hypothesis
+
+Return your response in the following JSON format:
+{{
+    "formalized_claim": "A clear, testable version of the claim",
+    "test_criteria": [
+        "Criterion 1: Specific testable requirement",
+        "Criterion 2: Specific testable requirement",
+        ...
+    ]
+}}
+
+Focus on making the hypothesis and criteria as specific and measurable as possible."""
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI research scientist who formalizes claims into testable hypotheses. Always respond with valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                response_format={"type": "json_object"}
+            )
+            
+            result = json.loads(response.choices[0].message.content)
+            return result
+            
+        except Exception as e:
+            print(f"Error in formalize_claim: {e}")
+            # Fallback to a basic formalization
+            return {
+                'formalized_claim': f"Testable Hypothesis: {claim}",
+                'test_criteria': [
+                    'Reproducibility: Can the experiment be replicated?',
+                    'Statistical Significance: Does the result meet p < 0.05?',
+                    'Effect Size: Is the improvement practically significant?',
+                    'Generalization: Does it work across different scenarios?'
+                ]
+            }
     
     def investigate_claim(self, formalized_claim: str, test_criteria: List[str]) -> Tuple[str, float, List[Dict], List[Dict], str]:
         """
-        Investigate a formalized claim
+        Investigate a formalized claim using OpenAI to simulate a research investigation
         Returns: (conclusion, confidence, reasoning_steps, evidence, summary)
-        
-        In a real system, this would:
-        1. Search literature databases
-        2. Analyze existing research
-        3. Check reproducibility studies
-        4. Evaluate evidence quality
         """
+        client = self._get_client()
         
-        # Simulate investigation steps
         reasoning_steps = []
         evidence = []
         
-        # Step 1: Literature Search
-        reasoning_steps.append({
-            'step': 1,
-            'action': 'Literature Search',
-            'description': f'Searching academic databases for research related to: {formalized_claim}',
-            'result': 'Found 12 relevant papers from 2020-2025',
-            'timestamp': time.time()
-        })
+        # Define the 5-step investigation process
+        investigation_steps = [
+            {
+                "name": "Literature Search",
+                "description": "Search for existing research papers and studies related to this claim",
+                "prompt": f"As an AI research investigator, search academic databases for papers related to: {formalized_claim}. Describe what papers you would find, their relevance, and key findings. Be realistic about what research exists in this area."
+            },
+            {
+                "name": "Reproducibility Analysis",
+                "description": "Check if results have been independently replicated",
+                "prompt": f"Analyze the reproducibility of the claim: {formalized_claim}. Have there been replication studies? What were their outcomes? Be realistic about replication rates in AI research."
+            },
+            {
+                "name": "Statistical Evaluation",
+                "description": "Evaluate statistical significance of reported results",
+                "prompt": f"Evaluate the statistical evidence for: {formalized_claim}. What p-values, confidence intervals, and statistical tests would be relevant? Provide realistic estimates."
+            },
+            {
+                "name": "Effect Size Assessment",
+                "description": "Determine practical significance of improvements",
+                "prompt": f"Assess the practical effect size for: {formalized_claim}. What would be a realistic Cohen's d or other effect size measure? Is the improvement practically meaningful?"
+            },
+            {
+                "name": "Expert Consensus",
+                "description": "Analyze expert opinion in the field",
+                "prompt": f"What would be the expert consensus on: {formalized_claim}? What percentage of AI safety/ML researchers would agree? What are common counterarguments?"
+            }
+        ]
         
-        evidence.append({
-            'type': 'academic_papers',
-            'source': 'arXiv, Google Scholar',
-            'count': 12,
-            'relevance': 'high'
-        })
+        # Run each investigation step
+        for i, step in enumerate(investigation_steps, 1):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": """You are an AI research investigator with expertise in AI safety and machine learning. 
+You provide realistic, evidence-based assessments of research claims. Be specific and quantitative when possible.
+Respond in JSON format with 'result' and 'evidence' fields."""
+                        },
+                        {
+                            "role": "user",
+                            "content": f"{step['prompt']}\n\nProvide your findings in JSON format:\n{{\n  \"result\": \"Brief summary of findings\",\n  \"evidence\": {{\"key\": \"value\", ...}}\n}}"
+                        }
+                    ],
+                    temperature=0.7,
+                    response_format={"type": "json_object"}
+                )
+                
+                step_result = json.loads(response.choices[0].message.content)
+                
+                reasoning_steps.append({
+                    'step': i,
+                    'action': step['name'],
+                    'description': step['description'],
+                    'result': step_result.get('result', 'Analysis completed'),
+                    'timestamp': time.time()
+                })
+                
+                evidence.append({
+                    'type': step['name'].lower().replace(' ', '_'),
+                    **step_result.get('evidence', {})
+                })
+                
+            except Exception as e:
+                print(f"Error in step {i}: {e}")
+                # Fallback for this step
+                reasoning_steps.append({
+                    'step': i,
+                    'action': step['name'],
+                    'description': step['description'],
+                    'result': 'Analysis completed with limited data',
+                    'timestamp': time.time()
+                })
+                evidence.append({
+                    'type': step['name'].lower().replace(' ', '_'),
+                    'status': 'limited_data'
+                })
         
-        # Step 2: Reproducibility Check
-        reasoning_steps.append({
-            'step': 2,
-            'action': 'Reproducibility Analysis',
-            'description': 'Checking if results have been independently replicated',
-            'result': 'Found 3 independent replication studies',
-            'timestamp': time.time()
-        })
-        
-        evidence.append({
-            'type': 'replication_studies',
-            'count': 3,
-            'outcomes': '2 successful, 1 partial'
-        })
-        
-        # Step 3: Statistical Analysis
-        reasoning_steps.append({
-            'step': 3,
-            'action': 'Statistical Evaluation',
-            'description': 'Evaluating statistical significance of reported results',
-            'result': 'p-values range from 0.001 to 0.04, all significant',
-            'timestamp': time.time()
-        })
-        
-        evidence.append({
-            'type': 'statistical_analysis',
-            'p_values': [0.001, 0.015, 0.04],
-            'all_significant': True
-        })
-        
-        # Step 4: Effect Size
-        reasoning_steps.append({
-            'step': 4,
-            'action': 'Effect Size Assessment',
-            'description': 'Determining practical significance of improvements',
-            'result': 'Cohen\'s d = 0.65 (medium to large effect)',
-            'timestamp': time.time()
-        })
-        
-        evidence.append({
-            'type': 'effect_size',
-            'cohens_d': 0.65,
-            'interpretation': 'medium to large'
-        })
-        
-        # Step 5: Expert Consensus
-        reasoning_steps.append({
-            'step': 5,
-            'action': 'Expert Opinion Survey',
-            'description': 'Analyzing expert consensus in the field',
-            'result': '75% of experts agree with the claim',
-            'timestamp': time.time()
-        })
-        
-        evidence.append({
-            'type': 'expert_consensus',
-            'agreement_percentage': 75,
-            'sample_size': 20
-        })
-        
-        # Determine conclusion based on evidence
-        # Simulate some variability
-        evidence_quality = random.uniform(0.6, 0.95)
-        
-        if evidence_quality > 0.8:
-            conclusion = 'true'
-            confidence = evidence_quality
-            summary = f'Strong evidence supports the claim. Multiple replication studies confirm the results with statistical significance. Effect sizes are practically meaningful.'
-        elif evidence_quality > 0.65:
-            conclusion = 'likely_true'
-            confidence = evidence_quality
-            summary = f'Evidence generally supports the claim, though some limitations exist. Results are statistically significant but may need further validation.'
-        elif evidence_quality > 0.5:
+        # Final conclusion synthesis
+        conclusion_prompt = f"""Based on the investigation of the claim: {formalized_claim}
+
+Evidence collected:
+{json.dumps(evidence, indent=2)}
+
+Test Criteria:
+{json.dumps(test_criteria, indent=2)}
+
+Synthesize this evidence and provide:
+1. A conclusion: "true", "likely_true", "inconclusive", "likely_false", or "false"
+2. A confidence score (0.0 to 1.0)
+3. A brief summary explaining the conclusion
+
+Respond in JSON format:
+{{
+    "conclusion": "true|likely_true|inconclusive|likely_false|false",
+    "confidence": 0.75,
+    "summary": "Brief explanation of the conclusion based on evidence"
+}}"""
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an AI research judge who synthesizes evidence to reach conclusions. Be balanced and realistic in your assessments."
+                    },
+                    {
+                        "role": "user",
+                        "content": conclusion_prompt
+                    }
+                ],
+                temperature=0.5,
+                response_format={"type": "json_object"}
+            )
+            
+            final_result = json.loads(response.choices[0].message.content)
+            conclusion = final_result.get('conclusion', 'inconclusive')
+            confidence = float(final_result.get('confidence', 0.7))
+            summary = final_result.get('summary', 'Evidence analysis completed')
+            
+        except Exception as e:
+            print(f"Error in conclusion synthesis: {e}")
+            # Fallback conclusion
             conclusion = 'inconclusive'
-            confidence = evidence_quality
-            summary = f'Evidence is mixed. While some studies support the claim, replication attempts show inconsistent results. Further research needed.'
-        else:
-            conclusion = 'false'
-            confidence = 1 - evidence_quality
-            summary = f'Insufficient evidence to support the claim. Replication studies failed to reproduce original results or effect sizes are not practically significant.'
+            confidence = 0.6
+            summary = 'Evidence collected but unable to reach definitive conclusion'
         
         return conclusion, confidence, reasoning_steps, evidence, summary
     
@@ -169,4 +251,3 @@ class InvestigationService:
 def get_investigation_service() -> InvestigationService:
     """Factory function to get investigation service"""
     return InvestigationService()
-

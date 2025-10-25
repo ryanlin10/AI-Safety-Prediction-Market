@@ -6,6 +6,7 @@ Uses SQLite instead of PostgreSQL for simpler local development
 import os
 os.environ['FLASK_ENV'] = 'development'
 os.environ['DATABASE_URL'] = 'sqlite:///prediction_market.db'
+os.environ['OPENAI_API_KEY'] = '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'
 
 from app import create_app, db
 

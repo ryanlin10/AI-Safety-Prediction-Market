@@ -17,7 +17,8 @@ interface Investigation {
   confidence: number;
   summary: string;
   created_at: string;
-  completed_at: string;
+  started_at?: string;
+  completed_at?: string;
   idea: {
     id: number;
     title: string;
@@ -57,7 +58,6 @@ const AgentConsole: React.FC = () => {
   const agents: Agent[] = agentsData?.data?.agents || [];
   const markets: Market[] = marketsData?.data?.markets || [];
   const investigations: Investigation[] = investigationsData?.data?.investigations || [];
-  const bettorAgents = agents.filter((a) => a.agent_type === 'bettor');
   const researcherAgents = agents.filter((a) => a.agent_type === 'researcher');
 
   const getConclusionColor = (conclusion: string) => {
@@ -99,50 +99,6 @@ const AgentConsole: React.FC = () => {
       <p className="subtitle">Manage and monitor AI agents</p>
 
       <div className="agents-section">
-        <h2>Bettor Agents</h2>
-        <div className="agents-grid">
-          {bettorAgents.map((agent) => (
-            <div key={agent.id} className="agent-card">
-              <div className="agent-header">
-                <h3>{agent.name}</h3>
-                <span className={`status-indicator ${agent.is_active ? 'active' : 'inactive'}`}>
-                  {agent.is_active ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-              <div className="agent-type">🤖 {agent.type}</div>
-              
-              <div className="agent-actions">
-                <select
-                  onChange={(e) => setSelectedMarketId(parseInt(e.target.value))}
-                  className="market-select"
-                >
-                  <option value="0">Select a market...</option>
-                  {markets.map((market) => (
-                    <option key={market.id} value={market.id}>
-                      Market #{market.id}: {market.question_text.substring(0, 50)}...
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() =>
-                    selectedMarketId > 0 &&
-                    placeInitialBetMutation.mutate({
-                      agentId: agent.id,
-                      marketId: selectedMarketId,
-                    })
-                  }
-                  disabled={selectedMarketId === 0 || placeInitialBetMutation.isPending}
-                  className="place-bet-btn"
-                >
-                  Place Initial Bet
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="agents-section">
         <h2>Researcher Agents</h2>
         <div className="agents-grid">
           {researcherAgents.map((agent) => (
@@ -153,7 +109,7 @@ const AgentConsole: React.FC = () => {
                   {agent.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              <div className="agent-type">🔬 {agent.type}</div>
+              <div className="agent-type">🔬 {agent.agent_type}</div>
               <div className="agent-meta">
                 {agent.meta && (
                   <pre>{JSON.stringify(agent.meta, null, 2)}</pre>
@@ -189,25 +145,41 @@ const AgentConsole: React.FC = () => {
                     <h3 className="investigation-title">{inv.idea?.title || 'Investigation'}</h3>
                     <p className="investigation-claim">{inv.idea?.extracted_claim}</p>
                   </div>
-                  <div className="investigation-conclusion" style={{ borderColor: getConclusionColor(inv.conclusion) }}>
-                    <div className="conclusion-label" style={{ color: getConclusionColor(inv.conclusion) }}>
-                      {getConclusionLabel(inv.conclusion)}
+                  {inv.status === 'completed' && inv.conclusion ? (
+                    <div className="investigation-conclusion" style={{ borderColor: getConclusionColor(inv.conclusion) }}>
+                      <div className="conclusion-label" style={{ color: getConclusionColor(inv.conclusion) }}>
+                        {getConclusionLabel(inv.conclusion)}
+                      </div>
+                      <div className="confidence-score">
+                        Confidence: {inv.confidence ? (inv.confidence * 100).toFixed(0) : 0}%
+                      </div>
                     </div>
-                    <div className="confidence-score">
-                      Confidence: {(inv.confidence * 100).toFixed(0)}%
+                  ) : (
+                    <div className="investigation-conclusion" style={{ borderColor: '#999' }}>
+                      <div className="conclusion-label" style={{ color: '#999' }}>
+                        {inv.status === 'investigating' ? '⚙️ IN PROGRESS' : 
+                         inv.status === 'failed' ? '❌ FAILED' : '⏳ PENDING'}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                <div className="investigation-summary">
-                  <strong>Summary:</strong>
-                  <p>{inv.summary}</p>
-                </div>
+                {inv.summary && (
+                  <div className="investigation-summary">
+                    <strong>Summary:</strong>
+                    <p>{inv.summary}</p>
+                  </div>
+                )}
 
                 <div className="investigation-meta">
                   <span className={`status-badge status-${inv.status}`}>{inv.status}</span>
                   <span className="investigation-date">
-                    Completed: {new Date(inv.completed_at).toLocaleString()}
+                    {inv.completed_at 
+                      ? `Completed: ${new Date(inv.completed_at).toLocaleString()}`
+                      : inv.started_at
+                        ? `Started: ${new Date(inv.started_at).toLocaleString()}`
+                        : `Created: ${new Date(inv.created_at).toLocaleString()}`
+                    }
                   </span>
                   <button
                     onClick={() => setExpandedInvestigation(
