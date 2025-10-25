@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Idea } from '../types';
 import './IdeaExplorer.css';
 
 const IdeaExplorer: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const queryClient = useQueryClient();
 
   const { data: ideasData, isLoading } = useQuery({
     queryKey: ['ideas', searchQuery],
     queryFn: () => api.getIdeas({ query: searchQuery, limit: 50 }),
+  });
+
+  const investigateMutation = useMutation({
+    mutationFn: (ideaId: number) => api.createInvestigation(ideaId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['investigations'] });
+      alert(`✅ Investigation started! Check the Agents Console to see the results.`);
+    },
+    onError: (error: any) => {
+      alert(`❌ Investigation failed: ${error.response?.data?.error || 'Unknown error'}`);
+    },
   });
 
   const ideas: Idea[] = ideasData?.data?.ideas || [];
@@ -64,6 +76,17 @@ const IdeaExplorer: React.FC = () => {
                   <span className="idea-date">
                     {new Date(idea.created_at).toLocaleDateString()}
                   </span>
+                  <button
+                    onClick={() => investigateMutation.mutate(idea.id)}
+                    disabled={investigateMutation.isPending}
+                    className="investigate-btn"
+                  >
+                    {investigateMutation.isPending ? (
+                      <>⚙️ Investigating...</>
+                    ) : (
+                      <>🔬 Automated Test</>
+                    )}
+                  </button>
                 </div>
               </div>
             ))

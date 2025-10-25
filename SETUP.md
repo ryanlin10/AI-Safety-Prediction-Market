@@ -215,3 +215,4 @@ For issues or questions:
 2. Verify services are running: `lsof -i :3000` and `lsof -i :5001`
 3. Reset everything: `./stop.sh && ./setup.sh && ./start.sh`
 
+

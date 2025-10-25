@@ -1,167 +1,161 @@
 """
 Research Claim Generator Service
-Generates testable research claims for AI safety and alignment research
+Generates testable research claims for AI safety and alignment research using OpenAI
 """
-import random
+import json
 from typing import List, Dict
+from openai import OpenAI
+from flask import current_app
 
 class ClaimGenerator:
-    """Generate testable research claims"""
+    """Generate testable research claims using OpenAI"""
     
-    # Templates for different research areas
-    CLAIM_TEMPLATES = {
-        "scalability": [
-            {
-                "title": "Scaling Laws for {model_type} in {domain}",
-                "abstract": "We investigate the scaling behavior of {model_type} across different model sizes and dataset scales in {domain}. Our analysis reveals {finding} that suggests {implication}.",
-                "claim": "{model_type} performance scales predictably with {metric} in {domain}",
-                "keywords": ["scaling laws", "{domain}", "{model_type}", "empirical analysis"]
-            },
-            {
-                "title": "Efficient {technique} for Large-Scale {application}",
-                "abstract": "We propose a novel {technique} approach that reduces computational costs while maintaining performance in {application}. Our method achieves {improvement} compared to baseline approaches.",
-                "claim": "{technique} can reduce computational costs by {percentage} in {application}",
-                "keywords": ["efficiency", "{technique}", "{application}", "optimization"]
-            }
-        ],
-        "alignment": [
-            {
-                "title": "{method} for Improved AI Alignment",
-                "abstract": "We introduce {method}, a technique for aligning AI systems with human values through {mechanism}. Experiments show {result} across multiple domains.",
-                "claim": "{method} improves alignment metrics by {improvement} over baseline approaches",
-                "keywords": ["AI alignment", "{method}", "safety", "human values"]
-            },
-            {
-                "title": "Robustness of {approach} Against {threat}",
-                "abstract": "We evaluate the robustness of {approach} when faced with {threat}. Our findings indicate {vulnerability_level} and suggest {mitigation}.",
-                "claim": "{approach} maintains {performance_metric} under {threat} conditions",
-                "keywords": ["robustness", "{approach}", "{threat}", "adversarial"]
-            }
-        ],
-        "interpretability": [
-            {
-                "title": "Mechanistic Analysis of {component} in {model}",
-                "abstract": "Through systematic ablation and activation analysis, we identify {number} distinct functional roles of {component} in {model}. These findings reveal {insight}.",
-                "claim": "{component} exhibits {number} functionally distinct behaviors in {model}",
-                "keywords": ["interpretability", "mechanistic analysis", "{component}", "{model}"]
-            },
-            {
-                "title": "Causal Tracing of {behavior} in Language Models",
-                "abstract": "We apply causal intervention techniques to trace the computational pathway responsible for {behavior}. Results show {finding} concentrated in {location}.",
-                "claim": "{behavior} emerges from computations in {location} of the model",
-                "keywords": ["causal analysis", "interpretability", "{behavior}", "tracing"]
-            }
-        ],
-        "safety": [
-            {
-                "title": "Detection and Mitigation of {risk} in {system}",
-                "abstract": "We develop methods to detect and mitigate {risk} in {system}. Our approach achieves {accuracy} detection rate and reduces {risk} by {percentage}.",
-                "claim": "{risk} can be detected with {accuracy} accuracy in {system}",
-                "keywords": ["AI safety", "{risk}", "{system}", "detection"]
-            },
-            {
-                "title": "Red Teaming {model} for {vulnerability}",
-                "abstract": "Through systematic red teaming, we discover {finding} related to {vulnerability} in {model}. We propose {solution} to address these issues.",
-                "claim": "{model} exhibits {vulnerability} under {condition} stress testing",
-                "keywords": ["red teaming", "safety", "{vulnerability}", "{model}"]
-            }
-        ],
-        "capabilities": [
-            {
-                "title": "Emergent {capability} in {model_class} Models",
-                "abstract": "We document the emergence of {capability} in {model_class} models at the {scale} scale. This capability manifests as {description} and enables {application}.",
-                "claim": "{capability} emerges in {model_class} models above {scale} parameters",
-                "keywords": ["emergence", "{capability}", "{model_class}", "scaling"]
-            },
-            {
-                "title": "Chain-of-Thought {task} with {model}",
-                "abstract": "We evaluate {model}'s ability to perform {task} using chain-of-thought prompting. Results show {performance} compared to {baseline}.",
-                "claim": "Chain-of-thought improves {task} performance by {improvement} in {model}",
-                "keywords": ["chain-of-thought", "{task}", "{model}", "reasoning"]
-            }
-        ]
-    }
+    def __init__(self):
+        self.client = None
     
-    # Substitution options
-    SUBSTITUTIONS = {
-        "model_type": ["transformer", "diffusion model", "retrieval-augmented model", "multimodal model"],
-        "domain": ["few-shot learning", "long-context processing", "multi-task learning", "zero-shot transfer"],
-        "finding": ["power-law behavior", "phase transitions", "logarithmic improvements", "emergent capabilities"],
-        "implication": ["predictable performance at larger scales", "optimal compute allocation strategies", "architectural improvements"],
-        "technique": ["sparse attention", "mixture-of-experts", "knowledge distillation", "quantization"],
-        "application": ["language modeling", "image generation", "code synthesis", "reasoning tasks"],
-        "improvement": ["3x speedup", "40% reduction in parameters", "2x throughput", "50% memory savings"],
-        "percentage": ["30%", "45%", "60%", "75%"],
-        "method": ["Constitutional AI", "Recursive Reward Modeling", "Debate-based Oversight", "Value Learning"],
-        "mechanism": ["self-critique", "human feedback", "multi-agent debate", "principle-following"],
-        "result": ["improved safety scores", "better value alignment", "reduced harmful outputs", "increased coherence"],
-        "approach": ["RLHF", "supervised fine-tuning", "adversarial training", "prompt engineering"],
-        "threat": ["distribution shift", "adversarial attacks", "jailbreak attempts", "prompt injection"],
-        "vulnerability_level": ["moderate robustness", "significant vulnerabilities", "strong resistance", "partial resilience"],
-        "mitigation": ["defensive distillation", "input validation", "output filtering", "ensemble methods"],
-        "performance_metric": ["75% accuracy", "reliable behavior", "consistent outputs", "safe responses"],
-        "component": ["attention heads", "MLP layers", "residual streams", "layer norms"],
-        "model": ["GPT-style transformers", "encoder-decoder models", "vision transformers", "multimodal models"],
-        "number": ["8-12", "5-7", "10-15", "15-20"],
-        "insight": ["modular functional organization", "hierarchical processing", "sparse activation patterns", "interpretable circuits"],
-        "behavior": ["in-context learning", "factual recall", "logical reasoning", "arithmetic"],
-        "finding": ["causal pathways", "information flow", "computational bottlenecks", "critical neurons"],
-        "location": ["middle layers", "attention patterns", "specific heads", "residual connections"],
-        "risk": ["reward hacking", "goal misgeneralization", "deceptive alignment", "capability overhang"],
-        "system": ["reinforcement learning agents", "language models", "autonomous systems", "recommendation engines"],
-        "accuracy": ["85%", "90%", "78%", "92%"],
-        "vulnerability": ["prompt injection", "adversarial examples", "distributional shift", "backdoor triggers"],
-        "condition": ["adversarial", "out-of-distribution", "high-stakes", "safety-critical"],
-        "solution": ["detection mechanisms", "input sanitization", "robust training", "monitoring systems"],
-        "capability": ["analogical reasoning", "tool use", "meta-learning", "abstract planning"],
-        "model_class": ["large language", "vision-language", "code generation", "multimodal"],
-        "scale": ["10B", "100B", "1T", "500B"],
-        "description": ["spontaneous strategy formation", "novel problem-solving", "creative synthesis", "transfer learning"],
-        "task": ["mathematical reasoning", "logical deduction", "causal inference", "multi-step planning"],
-        "model": ["GPT-4", "Claude", "PaLM", "Gemini"],
-        "performance": ["significant improvements", "mixed results", "strong performance", "modest gains"],
-        "baseline": ["standard prompting", "few-shot learning", "fine-tuned models", "zero-shot approaches"],
-        "metric": "compute budget"
-    }
+    def _get_client(self):
+        """Lazy initialization of OpenAI client"""
+        if self.client is None:
+            api_key = current_app.config.get('OPENAI_API_KEY')
+            if not api_key:
+                raise ValueError("OpenAI API key not configured")
+            self.client = OpenAI(api_key=api_key)
+        return self.client
+    
+    CATEGORIES = [
+        "scalability",
+        "alignment", 
+        "interpretability",
+        "safety",
+        "capabilities"
+    ]
     
     def generate_claim(self, category: str = None) -> Dict:
-        """Generate a single research claim"""
-        if category is None or category not in self.CLAIM_TEMPLATES:
-            category = random.choice(list(self.CLAIM_TEMPLATES.keys()))
+        """Generate a single research claim using OpenAI"""
+        if category is None or category not in self.CATEGORIES:
+            import random
+            category = random.choice(self.CATEGORIES)
         
-        template = random.choice(self.CLAIM_TEMPLATES[category])
+        client = self._get_client()
         
-        # Fill in template placeholders
-        filled = {}
-        for key, value in template.items():
-            if isinstance(value, str):
-                filled_value = value
-                # Find all {placeholder} patterns and substitute
-                import re
-                placeholders = re.findall(r'\{(\w+)\}', value)
-                for placeholder in placeholders:
-                    if placeholder in self.SUBSTITUTIONS:
-                        replacement = random.choice(self.SUBSTITUTIONS[placeholder])
-                        filled_value = filled_value.replace(f'{{{placeholder}}}', replacement)
-                filled[key] = filled_value
-            elif isinstance(value, list):
-                # Handle keyword lists
-                filled[key] = [
-                    item.replace(f'{{{placeholder}}}', random.choice(self.SUBSTITUTIONS.get(placeholder, [placeholder])))
-                    for item in value
-                    for placeholder in [item[1:-1]] if item.startswith('{') and item.endswith('}')
-                ] or value
+        prompt = f"""Generate a realistic, testable research claim in the AI safety and alignment field, specifically in the category: {category}.
+
+Create a complete research paper summary including:
+1. A title (10-15 words)
+2. An abstract (100-150 words) 
+3. A list of 4-6 relevant keywords
+4. A specific, testable claim extracted from the research (one clear sentence)
+5. A confidence score (0.65-0.95) indicating how plausible/testable this claim is
+
+The claim should be:
+- Specific and measurable
+- Grounded in current AI safety research trends
+- Neither obviously true nor obviously false
+- Testable through empirical methods or theoretical analysis
+
+Category definitions:
+- scalability: Scaling laws, efficiency, compute optimization
+- alignment: Value alignment, RLHF, constitutional AI
+- interpretability: Mechanistic interpretability, causal tracing, circuit analysis
+- safety: Risk detection, adversarial robustness, red teaming
+- capabilities: Emergent abilities, reasoning, chain-of-thought
+
+Return your response in JSON format:
+{{
+    "title": "Paper title",
+    "abstract": "Paper abstract...",
+    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4"],
+    "claim": "The specific testable claim",
+    "confidence_score": 0.85,
+    "category": "{category}"
+}}"""
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are an AI safety researcher who generates realistic research paper summaries and testable claims. 
+Your claims should be based on current trends in AI safety research but should be novel and interesting.
+Always respond with valid JSON."""
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.8,  # Higher temperature for more creative/diverse claims
+                response_format={"type": "json_object"}
+            )
+            
+            result = json.loads(response.choices[0].message.content)
+            
+            # Ensure all required fields are present
+            required_fields = ['title', 'abstract', 'keywords', 'claim', 'confidence_score']
+            for field in required_fields:
+                if field not in result:
+                    raise ValueError(f"Missing required field: {field}")
+            
+            result['category'] = category
+            
+            return result
+            
+        except Exception as e:
+            print(f"Error generating claim with OpenAI: {e}")
+            # Fallback to a template-based claim
+            return self._generate_fallback_claim(category)
+    
+    def _generate_fallback_claim(self, category: str) -> Dict:
+        """Fallback claim generation if OpenAI fails"""
+        import random
         
-        # Add metadata
-        filled['category'] = category
-        filled['confidence_score'] = round(random.uniform(0.65, 0.95), 2)
+        fallback_claims = {
+            "scalability": {
+                "title": "Scaling Laws for Transformer Models in Few-Shot Learning",
+                "abstract": "We investigate the scaling behavior of transformer models across different model sizes and dataset scales in few-shot learning. Our analysis reveals power-law behavior that suggests predictable performance at larger scales.",
+                "keywords": ["scaling laws", "few-shot learning", "transformers", "empirical analysis"],
+                "claim": "Transformer performance scales predictably with compute budget in few-shot learning",
+                "confidence_score": 0.78
+            },
+            "alignment": {
+                "title": "Constitutional AI for Improved AI Alignment",
+                "abstract": "We introduce Constitutional AI, a technique for aligning AI systems with human values through self-critique. Experiments show improved safety scores across multiple domains.",
+                "keywords": ["AI alignment", "Constitutional AI", "safety", "human values"],
+                "claim": "Constitutional AI improves alignment metrics by 25% over baseline approaches",
+                "confidence_score": 0.72
+            },
+            "interpretability": {
+                "title": "Mechanistic Analysis of Attention Heads in GPT-style Transformers",
+                "abstract": "Through systematic ablation and activation analysis, we identify 8-12 distinct functional roles of attention heads in GPT-style transformers. These findings reveal modular functional organization.",
+                "keywords": ["interpretability", "mechanistic analysis", "attention heads", "transformers"],
+                "claim": "Attention heads exhibit 8-12 functionally distinct behaviors in GPT-style transformers",
+                "confidence_score": 0.81
+            },
+            "safety": {
+                "title": "Detection and Mitigation of Reward Hacking in Reinforcement Learning Agents",
+                "abstract": "We develop methods to detect and mitigate reward hacking in RL agents. Our approach achieves 85% detection rate and reduces reward hacking by 60%.",
+                "keywords": ["AI safety", "reward hacking", "RL agents", "detection"],
+                "claim": "Reward hacking can be detected with 85% accuracy in RL agents",
+                "confidence_score": 0.76
+            },
+            "capabilities": {
+                "title": "Emergent Analogical Reasoning in Large Language Models",
+                "abstract": "We document the emergence of analogical reasoning in large language models at the 10B parameter scale. This capability manifests as spontaneous strategy formation and enables novel problem-solving.",
+                "keywords": ["emergence", "analogical reasoning", "LLMs", "scaling"],
+                "claim": "Analogical reasoning emerges in large language models above 10B parameters",
+                "confidence_score": 0.73
+            }
+        }
         
-        return filled
+        claim_data = fallback_claims.get(category, fallback_claims["alignment"])
+        claim_data['category'] = category
+        return claim_data
     
     def generate_batch(self, count: int = 5, categories: List[str] = None) -> List[Dict]:
         """Generate multiple research claims"""
         if categories is None:
-            categories = list(self.CLAIM_TEMPLATES.keys())
+            categories = self.CATEGORIES
         
         claims = []
         for i in range(count):
@@ -175,4 +169,3 @@ class ClaimGenerator:
 def get_claim_generator() -> ClaimGenerator:
     """Factory function to get a claim generator instance"""
     return ClaimGenerator()
-

@@ -51,12 +51,13 @@ def create_app(config_name=None):
         )
     
     # Register blueprints
-    from app.routes import ideas, markets, bets, agents, experiments
+    from app.routes import ideas, markets, bets, agents, experiments, investigations
     app.register_blueprint(ideas.bp)
     app.register_blueprint(markets.bp)
     app.register_blueprint(bets.bp)
     app.register_blueprint(agents.bp)
     app.register_blueprint(experiments.bp)
+    app.register_blueprint(investigations.bp)
     
     # Health check endpoint
     @app.route('/health')

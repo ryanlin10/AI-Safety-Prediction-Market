@@ -41,7 +41,7 @@ export interface Bet {
 export interface Agent {
   id: number;
   name: string;
-  type: 'bettor' | 'researcher';
+  agent_type: 'bettor' | 'researcher';
   meta: any;
   created_at: string;
   is_active: boolean;
