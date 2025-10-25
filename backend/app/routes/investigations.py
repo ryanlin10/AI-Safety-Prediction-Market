@@ -138,3 +138,4 @@ def get_idea_investigations(idea_id):
         'investigations': [inv.to_dict() for inv in investigations]
     }), 200
 
+

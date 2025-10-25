@@ -65,3 +65,4 @@ class Investigation(db.Model):
     def __repr__(self):
         return f'<Investigation {self.id}: {self.status} - {self.conclusion}>'
 
+

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { Agent, Market } from '../types';
+import { Agent } from '../types';
 import './AgentConsole.css';
 
 interface Investigation {

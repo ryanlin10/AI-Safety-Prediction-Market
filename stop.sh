@@ -39,3 +39,4 @@ echo ""
 echo "${GREEN}All services stopped${NC}"
 echo ""
 
+

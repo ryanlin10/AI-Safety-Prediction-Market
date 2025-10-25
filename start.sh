@@ -67,3 +67,4 @@ echo ""
 echo "To stop services: ./stop.sh"
 echo ""
 
+
