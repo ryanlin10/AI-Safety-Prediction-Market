@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Market, Experiment } from '../types';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './MarketDetail.css';
 
 const MarketDetail: React.FC = () => {
@@ -10,10 +11,22 @@ const MarketDetail: React.FC = () => {
   const marketId = parseInt(id || '0');
   const queryClient = useQueryClient();
   const [selectedAgentId, setSelectedAgentId] = useState<number>(1);
+  const [buyAmounts, setBuyAmounts] = useState<{ [key: string]: number }>({});
 
   const { data: marketData, isLoading: marketLoading } = useQuery({
     queryKey: ['market', marketId],
     queryFn: () => api.getMarket(marketId),
+  });
+
+  const { data: pricesData, isLoading: pricesLoading } = useQuery({
+    queryKey: ['prices', marketId],
+    queryFn: () => api.getMarketPrices(marketId),
+    refetchInterval: 5000, // Refresh prices every 5 seconds
+  });
+
+  const { data: priceHistoryData } = useQuery({
+    queryKey: ['priceHistory', marketId],
+    queryFn: () => api.getPriceHistory(marketId),
   });
 
   const { data: experimentsData } = useQuery({
@@ -26,6 +39,16 @@ const MarketDetail: React.FC = () => {
     queryFn: () => api.getAgents(),
   });
 
+  const buySharesMutation = useMutation({
+    mutationFn: ({ outcome, amount }: { outcome: string; amount: number }) =>
+      api.buyShares(marketId, outcome, amount),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prices', marketId] });
+      queryClient.invalidateQueries({ queryKey: ['priceHistory', marketId] });
+      queryClient.invalidateQueries({ queryKey: ['market', marketId] });
+    },
+  });
+
   const runExperimentMutation = useMutation({
     mutationFn: () => api.runExperiment(marketId, selectedAgentId),
     onSuccess: () => {
@@ -34,8 +57,19 @@ const MarketDetail: React.FC = () => {
   });
 
   const market: Market = marketData?.data;
+  const prices = pricesData?.data?.prices || {};
+  const priceHistory = priceHistoryData?.data?.history || [];
   const experiments: Experiment[] = experimentsData?.data?.experiments || [];
   const agents = agentsData?.data?.agents || [];
+
+  const handleBuyShares = (outcome: string) => {
+    const amount = buyAmounts[outcome] || 10;
+    buySharesMutation.mutate({ outcome, amount });
+  };
+
+  const setBuyAmount = (outcome: string, amount: number) => {
+    setBuyAmounts(prev => ({ ...prev, [outcome]: amount }));
+  };
 
   if (marketLoading) {
     return <div className="loading">Loading market...</div>;
@@ -45,7 +79,7 @@ const MarketDetail: React.FC = () => {
     return <div className="error">Market not found</div>;
   }
 
-  const researcherAgents = agents.filter((a: any) => a.type === 'researcher');
+  const researcherAgents = agents.filter((a: any) => a.agent_type === 'researcher');
 
   return (
     <div className="market-detail">
@@ -76,20 +110,100 @@ const MarketDetail: React.FC = () => {
         </div>
       )}
 
-      <div className="outcomes-section">
-        <h2>Outcomes & Current Odds</h2>
+      <div className="trading-section">
+        <h2>Trade Shares</h2>
+        
+        {/* Price Chart */}
+        {priceHistory.length > 1 && (
+          <div className="price-chart">
+            <h3>Price History</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={priceHistory}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="timestamp" 
+                  tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
+                />
+                <YAxis domain={[0, 1]} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
+                <Tooltip 
+                  labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
+                  formatter={(value: number) => `${(value * 100).toFixed(2)}%`}
+                />
+                <Legend />
+                {market.outcomes.map((outcome, idx) => (
+                  <Line
+                    key={outcome}
+                    type="monotone"
+                    dataKey={`prices.${outcome}`}
+                    name={outcome}
+                    stroke={['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'][idx % 4]}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Trading Interface */}
         <div className="outcomes-grid">
-          {market.outcomes.map((outcome) => (
-            <div key={outcome} className="outcome-card">
-              <div className="outcome-name">{outcome}</div>
-              <div className="outcome-odds">
-                {market.current_odds
-                  ? `${(market.current_odds[outcome] * 100).toFixed(1)}%`
-                  : 'No bets yet'}
+          {market.outcomes.map((outcome) => {
+            const outcomePrice = prices[outcome] || {};
+            const buyPrice = outcomePrice.buy_price || 0;
+            const currentPrice = outcomePrice.current_price || 0;
+            const amount = buyAmounts[outcome] || 10;
+            const totalCost = (buyPrice * amount).toFixed(2);
+
+            return (
+              <div key={outcome} className="outcome-trading-card">
+                <div className="outcome-header">
+                  <h3>{outcome}</h3>
+                  <div className="current-probability">
+                    {(currentPrice * 100).toFixed(1)}%
+                  </div>
+                </div>
+
+                <div className="price-display">
+                  <div className="price-label">Buy Price</div>
+                  <div className="price-value">${buyPrice.toFixed(4)}/share</div>
+                </div>
+
+                <div className="trading-controls">
+                  <div className="amount-input">
+                    <label>Shares:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={amount}
+                      onChange={(e) => setBuyAmount(outcome, parseInt(e.target.value) || 10)}
+                      className="shares-input"
+                    />
+                  </div>
+
+                  <div className="total-cost">
+                    Total: ${totalCost}
+                  </div>
+
+                  <button
+                    onClick={() => handleBuyShares(outcome)}
+                    disabled={buySharesMutation.isPending || market.status !== 'active'}
+                    className="buy-button"
+                  >
+                    {buySharesMutation.isPending ? 'Buying...' : `Buy ${outcome}`}
+                  </button>
+                </div>
+
+                <div className="liquidity-info">
+                  Liquidity: ${(outcomePrice.liquidity || 0).toFixed(2)}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {pricesLoading && <div className="loading-overlay">Updating prices...</div>}
       </div>
 
       <div className="bets-section">

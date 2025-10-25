@@ -22,7 +22,7 @@ def run_experiment(market_id):
     
     agent = Agent.query.get_or_404(agent_id)
     
-    if agent.type != 'researcher':
+    if agent.agent_type != 'researcher':
         return jsonify({'error': 'Agent is not a researcher'}), 400
     
     # Create experiment record

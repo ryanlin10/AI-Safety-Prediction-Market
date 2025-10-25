@@ -32,6 +32,15 @@ export const api = {
   placeBet: (marketId: number, data: any) =>
     apiClient.post(`/markets/${marketId}/bets`, data),
   
+  getMarketPrices: (marketId: number) =>
+    apiClient.get(`/markets/${marketId}/prices`),
+  
+  buyShares: (marketId: number, outcome: string, amount: number) =>
+    apiClient.post(`/markets/${marketId}/buy`, { outcome, amount }),
+  
+  getPriceHistory: (marketId: number) =>
+    apiClient.get(`/markets/${marketId}/price-history`),
+  
   // Agents
   getAgents: () =>
     apiClient.get('/agents'),
