@@ -116,7 +116,14 @@ def seed_data():
                 "question_text": "Will AI debate systems demonstrate scalable oversight capabilities in a benchmark evaluation by 2026?",
                 "outcomes": ["Yes", "No"],
                 "resolution_rule": {
-                    "criteria": "Published peer-reviewed study showing AI debate enabling oversight",
+                    "description": "This market will resolve YES if a peer-reviewed publication demonstrates that AI debate systems can effectively enable human oversight of AI systems performing tasks beyond human expert capability, as measured by blind evaluation.",
+                    "criteria": [
+                        "Publication in a top-tier AI/ML venue (NeurIPS, ICML, ICLR, Nature, Science)",
+                        "Demonstrates debate enabling oversight on tasks humans cannot solve alone",
+                        "Includes quantitative benchmarks showing improved accuracy",
+                        "Results validated by independent reviewers"
+                    ],
+                    "source": "Academic publications and conference proceedings",
                     "deadline": "2026-12-31"
                 },
                 "status": "active"
@@ -126,7 +133,14 @@ def seed_data():
                 "question_text": "Will mechanistic interpretability reveal >10 distinct attention head types in GPT-style models?",
                 "outcomes": ["Yes", "No"],
                 "resolution_rule": {
-                    "criteria": "Peer-reviewed paper documenting distinct attention patterns",
+                    "description": "This market resolves YES if researchers identify and document more than 10 functionally distinct attention head types in transformer language models through mechanistic analysis.",
+                    "criteria": [
+                        "Peer-reviewed paper with systematic categorization of attention heads",
+                        "Clear functional distinctions between identified types",
+                        "Analysis on models with >1B parameters",
+                        "Reproducible methodology and results"
+                    ],
+                    "source": "Peer-reviewed ML interpretability research",
                     "deadline": "2025-12-31"
                 },
                 "status": "active"
@@ -136,7 +150,14 @@ def seed_data():
                 "question_text": "Will Constitutional AI methods be adopted by at least 3 major AI labs by end of 2025?",
                 "outcomes": ["0-1 labs", "2 labs", "3+ labs"],
                 "resolution_rule": {
-                    "criteria": "Public announcements or papers from major AI labs",
+                    "description": "Resolution based on public announcements, papers, or model cards from major AI labs (OpenAI, Anthropic, Google DeepMind, Meta AI, Microsoft Research) indicating use of Constitutional AI or similar principle-based training methods.",
+                    "criteria": [
+                        "Official announcement or publication from the lab",
+                        "Clear description of Constitutional AI or analogous methodology",
+                        "Used in production models or major research releases",
+                        "Verification through model cards or technical reports"
+                    ],
+                    "source": "Official lab announcements and publications",
                     "deadline": "2025-12-31"
                 },
                 "status": "active"
@@ -146,7 +167,14 @@ def seed_data():
                 "question_text": "Will GPT-5 or equivalent (>10T params) show new emergent abilities not present in GPT-4?",
                 "outcomes": ["Yes", "No", "Unclear"],
                 "resolution_rule": {
-                    "criteria": "Analysis of capabilities on standard benchmarks",
+                    "description": "Resolves YES if GPT-5 or a comparable model demonstrates qualitatively new capabilities not present in GPT-4, as documented in evaluation benchmarks or research papers.",
+                    "criteria": [
+                        "Model has >10 trillion parameters or equivalent compute",
+                        "Demonstrates abilities not present in GPT-4 class models",
+                        "Abilities emerge suddenly rather than scaling gradually",
+                        "Verified through standardized benchmarks"
+                    ],
+                    "source": "OpenAI publications and third-party evaluations",
                     "deadline": "2026-06-30"
                 },
                 "status": "active"
@@ -156,7 +184,14 @@ def seed_data():
                 "question_text": "What improvement in adversarial robustness will state-of-the-art achieve by 2026?",
                 "outcomes": ["<30%", "30-50%", "50-70%", ">70%"],
                 "resolution_rule": {
-                    "criteria": "Best reported accuracy on RobustBench benchmark",
+                    "description": "Resolves based on the best published adversarial robustness accuracy on ImageNet under AutoAttack or equivalent strong attacks, compared to 2023 baseline.",
+                    "criteria": [
+                        "Published results on standard ImageNet-1k dataset",
+                        "Evaluated using AutoAttack or comparably strong adversarial attacks",
+                        "Peer-reviewed or on major preprint servers",
+                        "Improvement measured against 2023 SOTA baseline"
+                    ],
+                    "source": "RobustBench leaderboard and peer-reviewed publications",
                     "deadline": "2026-12-31"
                 },
                 "status": "active"
@@ -166,7 +201,14 @@ def seed_data():
                 "question_text": "Will a major RL deployment experience reward hacking in production by end of 2025?",
                 "outcomes": ["Yes", "No"],
                 "resolution_rule": {
-                    "criteria": "Public incident report or academic case study",
+                    "description": "Resolves YES if a major production deployment of reinforcement learning experiences and publicly reports a significant reward hacking incident.",
+                    "criteria": [
+                        "Public incident report from a major tech company or AI lab",
+                        "Academic case study documenting the incident",
+                        "Clear evidence of reward specification exploitation",
+                        "Impact on real-world deployment confirmed"
+                    ],
+                    "source": "Industry incident reports and academic case studies",
                     "deadline": "2025-12-31"
                 },
                 "status": "active"

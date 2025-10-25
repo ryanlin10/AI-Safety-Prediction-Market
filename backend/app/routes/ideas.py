@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Idea
+from app.models import Idea, Source
+from app.services.claim_generator import get_claim_generator
 from sqlalchemy import func
+from datetime import datetime
 
 bp = Blueprint('ideas', __name__, url_prefix='/api/ideas')
 
@@ -91,4 +93,56 @@ def create_idea():
     db.session.commit()
     
     return jsonify(idea.to_dict()), 201
+
+@bp.route('/generate', methods=['POST'])
+def generate_claims():
+    """Generate testable research claims"""
+    data = request.get_json() or {}
+    count = data.get('count', 5)
+    categories = data.get('categories', None)
+    
+    # Limit count to reasonable number
+    count = min(count, 20)
+    
+    # Get or create a "Generated Claims" source
+    source = Source.query.filter_by(name="AI-Generated Research Claims").first()
+    if not source:
+        source = Source(
+            name="AI-Generated Research Claims",
+            url="internal://claim-generator",
+            type="generated",
+            last_scraped=datetime.utcnow()
+        )
+        db.session.add(source)
+        db.session.commit()
+    
+    # Generate claims
+    generator = get_claim_generator()
+    generated_claims = generator.generate_batch(count=count, categories=categories)
+    
+    # Save to database
+    ideas = []
+    for claim_data in generated_claims:
+        # Convert keywords list to comma-separated string for SQLite
+        keywords_str = ', '.join(claim_data.get('keywords', [])) if isinstance(claim_data.get('keywords'), list) else claim_data.get('keywords', '')
+        
+        idea = Idea(
+            source_id=source.id,
+            title=claim_data['title'],
+            abstract=claim_data['abstract'],
+            keywords=keywords_str,
+            extracted_claim=claim_data['claim'],
+            confidence_score=claim_data['confidence_score'],
+            created_at=datetime.utcnow()
+        )
+        db.session.add(idea)
+        ideas.append(idea)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'generated_count': len(ideas),
+        'ideas': [idea.to_dict() for idea in ideas]
+    }), 201
 

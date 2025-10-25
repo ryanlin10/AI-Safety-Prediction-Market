@@ -18,6 +18,9 @@ export const api = {
   getIdea: (id: number) =>
     apiClient.get(`/ideas/${id}`),
   
+  generateClaims: (count?: number, categories?: string[]) =>
+    apiClient.post('/ideas/generate', { count, categories }),
+  
   // Markets
   getMarkets: (params?: { status?: string; limit?: number; offset?: number }) =>
     apiClient.get('/markets', { params }),
