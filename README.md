@@ -15,10 +15,10 @@ This platform combines prediction markets with automated research validation:
 
 ### Tech Stack
 
-- **Backend**: Python, Flask, PostgreSQL (pgvector), Redis, Celery
-- **Frontend**: React, TypeScript, React Query, Recharts
-- **ML/NLP**: Hugging Face Transformers, Sentence Transformers, OpenAI API
-- **Infrastructure**: Docker, Docker Compose
+- **Backend**: Python 3.13, Flask 3.0, SQLAlchemy, SQLite (development)
+- **Frontend**: React 19, TypeScript, React Router, Axios, Recharts, TanStack Query
+- **ML/NLP**: OpenAI API (LLM agents)
+- **Optional**: PostgreSQL (pgvector), Redis, Celery, Docker (for production)
 
 ### Components
 
@@ -39,55 +39,70 @@ This platform combines prediction markets with automated research validation:
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- OpenAI API key (for LLM agents)
+**Backend:**
+- Python 3.10+ (tested with 3.13)
+- pip (Python package manager)
 
-### Setup
+**Frontend:**
+- Node.js 16+ (with npm)
 
-1. **Clone the repository**
+**Optional:**
+- OpenAI API key (for LLM agent features)
+
+### Automated Setup (Recommended)
+
 ```bash
-git clone https://github.com/ryanlin10/AI-Safety-Prediction-Market.git
-cd AI-Safety-Prediction-Market
+# Make scripts executable
+chmod +x setup.sh start.sh stop.sh
+
+# Run setup (installs all dependencies and seeds database)
+./setup.sh
+
+# Start both frontend and backend
+./start.sh
+
+# Access the application
+# - Frontend: http://localhost:3000
+# - Backend API: http://localhost:5001
 ```
 
-2. **Configure environment**
+**To stop all services:**
 ```bash
+./stop.sh
+```
+
+### Manual Setup
+
+See [SETUP.md](SETUP.md) for detailed manual setup instructions.
+
+**Quick manual start:**
+
+```bash
+# Backend
 cd backend
-cp env.example .env
-# Edit .env and add your OPENAI_API_KEY
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python seed_data.py  # Seed test data
+python run_local.py  # Start on port 5001
+
+# Frontend (in new terminal)
+cd frontend
+npm install
+npm start  # Start on port 3000
 ```
 
-3. **Start services**
-```bash
-docker-compose up --build
-```
-
-This will start:
-- PostgreSQL with pgvector (port 5432)
-- Redis (port 6379)
-- Flask API (port 5000)
-- Celery worker
-- React frontend (port 3000)
-
-4. **Initialize database**
-```bash
-# In a new terminal
-docker-compose exec backend flask db upgrade
-```
-
-5. **Seed initial data**
-```bash
-docker-compose exec backend python scraper/run.py --seed
-```
-
-6. **Run the scraper**
-```bash
-docker-compose exec backend python scraper/run.py
-```
-
-7. **Access the application**
+**Access the application:**
 - Frontend: http://localhost:3000
-- API: http://localhost:5000
+- Backend API: http://localhost:5001
+- Health Check: http://localhost:5001/health
+
+### 🎲 Test Data Included
+
+The setup script automatically seeds the database with:
+- **6 AI Safety Research Ideas** (Scalable Oversight, Mechanistic Interpretability, Constitutional AI, etc.)
+- **6 Active Prediction Markets** with various outcome types
+- **3 AI Agents** with different betting strategies (Conservative, Aggressive, Balanced)
 
 ## 📊 Database Schema
 
