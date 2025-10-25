@@ -215,14 +215,17 @@ const MarketDetail: React.FC = () => {
           </div>
         )}
 
-        {/* Trading Interface */}
+        {/* Trading Interface - Kalshi Style */}
         <div className="outcomes-grid">
           {market.outcomes.map((outcome) => {
             const outcomePrice = prices[outcome] || {};
-            const buyPrice = outcomePrice.buy_price || 0;
-            const currentPrice = outcomePrice.current_price || 0;
-            const amount = buyAmounts[outcome] || 10;
-            const totalCost = (buyPrice * amount).toFixed(2);
+            const currentPrice = outcomePrice.current_price || 0.5;
+            const dollarAmount = buyAmounts[outcome] || 10;
+            
+            // Calculate contracts and potential returns
+            const contracts = dollarAmount / currentPrice;
+            const potentialPayout = contracts * 1.0;
+            const potentialProfit = potentialPayout - dollarAmount;
             
             // Determine if this is Yes or No for coloring
             const isYes = outcome.toLowerCase() === 'yes';
@@ -234,7 +237,7 @@ const MarketDetail: React.FC = () => {
                 <div className="outcome-header">
                   <h3>{outcome}</h3>
                   <div className={`current-probability ${outcomeClass}`}>
-                    {(currentPrice * 100).toFixed(1)}%
+                    {(currentPrice * 100).toFixed(1)}¢
                   </div>
                 </div>
 
@@ -243,30 +246,48 @@ const MarketDetail: React.FC = () => {
                     className={`vote-fill ${outcomeClass}`}
                     style={{ width: `${(currentPrice * 100).toFixed(1)}%` }}
                   >
-                    <span className="vote-label">{(currentPrice * 100).toFixed(1)}% votes</span>
+                    <span className="vote-label">{(currentPrice * 100).toFixed(1)}% chance</span>
                   </div>
                 </div>
 
                 <div className="price-display">
-                  <div className="price-label">Buy Price</div>
-                  <div className="price-value">${buyPrice.toFixed(4)}/share</div>
+                  <div className="price-label">Contract Price</div>
+                  <div className="price-value">{(currentPrice * 100).toFixed(1)}¢</div>
+                  <div className="price-hint">Pays $1.00 if {outcome}</div>
                 </div>
 
                 <div className="trading-controls">
                   <div className="amount-input">
-                    <label>Shares:</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={amount}
-                      onChange={(e) => setBuyAmount(outcome, parseInt(e.target.value) || 10)}
-                      className="shares-input"
-                    />
+                    <label>Amount to Spend:</label>
+                    <div className="dollar-input-wrapper">
+                      <span className="dollar-sign">$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="1000"
+                        step="1"
+                        value={dollarAmount}
+                        onChange={(e) => setBuyAmount(outcome, parseFloat(e.target.value) || 10)}
+                        className="dollar-input"
+                      />
+                    </div>
                   </div>
 
-                  <div className="total-cost">
-                    Total: ${totalCost}
+                  <div className="contract-info">
+                    <div className="info-row">
+                      <span>Contracts:</span>
+                      <span className="info-value">{contracts.toFixed(2)}</span>
+                    </div>
+                    <div className="info-row">
+                      <span>Potential Payout:</span>
+                      <span className="info-value payout">${potentialPayout.toFixed(2)}</span>
+                    </div>
+                    <div className="info-row">
+                      <span>Potential Profit:</span>
+                      <span className={`info-value ${potentialProfit > 0 ? 'profit' : 'loss'}`}>
+                        ${potentialProfit.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
 
                   <button
@@ -279,7 +300,7 @@ const MarketDetail: React.FC = () => {
                 </div>
 
                 <div className="liquidity-info">
-                  Liquidity: ${(outcomePrice.liquidity || 0).toFixed(2)}
+                  Total Volume: ${(outcomePrice.liquidity || 0).toFixed(2)}
                 </div>
               </div>
             );

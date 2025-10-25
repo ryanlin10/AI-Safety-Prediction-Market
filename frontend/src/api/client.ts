@@ -41,6 +41,9 @@ export const api = {
   createMarket: (data: any) =>
     apiClient.post('/markets', data),
   
+  generateMarket: (keyword: string) =>
+    apiClient.post('/markets/generate', { keyword }),
+  
   // Bets
   placeBet: (marketId: number, data: any) =>
     apiClient.post(`/markets/${marketId}/bets`, data),

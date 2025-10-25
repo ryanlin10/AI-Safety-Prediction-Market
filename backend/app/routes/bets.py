@@ -99,7 +99,7 @@ def get_market_prices(market_id):
 
 @bp.route('/markets/<int:market_id>/buy', methods=['POST'])
 def buy_shares(market_id):
-    """Buy shares of an outcome"""
+    """Buy contracts of an outcome (Kalshi-style)"""
     market = Market.query.get_or_404(market_id)
     
     if market.status != 'active':
@@ -111,7 +111,7 @@ def buy_shares(market_id):
         return jsonify({'error': 'Missing outcome or amount'}), 400
     
     outcome = data['outcome']
-    amount = float(data['amount'])
+    amount = float(data['amount'])  # Dollar amount to spend
     
     # Parse outcomes
     try:
@@ -125,35 +125,51 @@ def buy_shares(market_id):
     if amount <= 0:
         return jsonify({'error': 'Amount must be positive'}), 400
     
-    # Calculate cost using market maker
+    # Get current market price for the outcome
     bets = market.bets.all()
     mm = get_market_maker()
-    pools = mm.get_liquidity_pools(outcomes, bets)
-    cost = mm.calculate_buy_price(outcome, amount, pools)
+    current_prices = mm.calculate_all_prices(outcomes, bets)
+    current_price = current_prices.get(outcome, 0.5)  # Default to 50% if no price
+    
+    # In Kalshi-style markets:
+    # - Each contract costs the current price (e.g., $0.65 for 65% probability)
+    # - Each contract pays $1.00 if correct, $0.00 if wrong
+    # - Number of contracts = amount spent / current price
+    contracts = amount / current_price if current_price > 0 else 0
+    
+    if contracts <= 0:
+        return jsonify({'error': 'Invalid number of contracts'}), 400
+    
+    # Potential payout if correct: contracts × $1.00
+    potential_payout = contracts * 1.0
+    # Potential profit if correct: payout - cost
+    potential_profit = potential_payout - amount
     
     # Record the bet
     bet = Bet(
         market_id=market_id,
         user_id=data.get('user_id', 1),  # Default user for now
         outcome=outcome,
-        stake=cost,  # The cost is the stake
-        odds=pools[outcome] / sum(pools.values()),  # Current odds
-        rationale=f'Bought {amount} shares at ${cost/amount:.4f} per share'
+        stake=amount,  # Amount spent
+        odds=current_price,  # Price at time of purchase
+        rationale=f'Bought {contracts:.2f} contracts at ${current_price:.2f} each. Pays ${potential_payout:.2f} if {outcome}.'
     )
     
     db.session.add(bet)
     db.session.commit()
     
-    # Return updated prices
+    # Return updated prices (prices update based on volume)
     new_bets = market.bets.all()
     new_prices = mm.calculate_all_prices(outcomes, new_bets)
     
     return jsonify({
         'success': True,
         'bet': bet.to_dict(),
-        'cost': cost,
-        'shares': amount,
-        'avg_price': cost / amount,
+        'amount_spent': amount,
+        'contracts_purchased': round(contracts, 2),
+        'purchase_price': round(current_price, 2),
+        'potential_payout': round(potential_payout, 2),
+        'potential_profit': round(potential_profit, 2),
         'new_prices': new_prices
     }), 201
 

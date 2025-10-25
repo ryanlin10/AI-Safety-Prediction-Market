@@ -1,17 +1,56 @@
-import React, { useMemo } from 'react';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Market } from '../types';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [keyword, setKeyword] = useState('');
+  const [newlyGeneratedIds, setNewlyGeneratedIds] = useState<Set<number>>(new Set());
+  
   const { data: marketsData, isLoading } = useQuery({
     queryKey: ['markets'],
     queryFn: () => api.getMarkets({ status: 'active' }),
   });
 
   const markets: Market[] = marketsData?.data?.markets || [];
+
+  // Generate market mutation
+  const generateMarketMutation = useMutation({
+    mutationFn: (searchKeyword: string) => api.generateMarket(searchKeyword),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['markets'] });
+      if (response.data?.market?.id) {
+        const marketId = response.data.market.id;
+        setNewlyGeneratedIds(prev => {
+          const updated = new Set(prev);
+          updated.add(marketId);
+          return updated;
+        });
+        // Remove highlight after 5 seconds
+        setTimeout(() => {
+          setNewlyGeneratedIds(prev => {
+            const updated = new Set(prev);
+            updated.delete(marketId);
+            return updated;
+          });
+        }, 5000);
+      }
+      setKeyword('');
+    },
+    onError: (error: any) => {
+      console.error('Failed to generate market:', error);
+      alert(error.response?.data?.error || 'Failed to generate market. Please try a different keyword.');
+    },
+  });
+
+  const handleGenerateMarket = () => {
+    if (keyword.trim()) {
+      generateMarketMutation.mutate(keyword.trim());
+    }
+  };
 
   // Fetch prices for all markets
   const pricesQueries = useQueries({
@@ -143,6 +182,24 @@ const Dashboard: React.FC = () => {
           <h1>Prediction Market</h1>
           <p className="subtitle">AI Safety Research Clusters - Box size reflects popularity</p>
         </div>
+        <div className="generate-market-section">
+          <input
+            type="text"
+            className="keyword-input"
+            placeholder="Enter keyword (e.g., alignment, safety)"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleGenerateMarket()}
+            disabled={generateMarketMutation.isPending}
+          />
+          <button
+            className="generate-market-btn"
+            onClick={handleGenerateMarket}
+            disabled={!keyword.trim() || generateMarketMutation.isPending}
+          >
+            {generateMarketMutation.isPending ? 'Generating...' : '+ Generate Market'}
+          </button>
+        </div>
       </div>
 
       {markets.length === 0 ? (
@@ -166,12 +223,13 @@ const Dashboard: React.FC = () => {
                     {topicMarkets.map((market) => {
                       // Calculate size based on popularity
                       const size = Math.max(240, Math.min(360, 240 + (market.popularity / maxPopularity) * 120));
+                      const isNewlyGenerated = newlyGeneratedIds.has(market.id);
 
                       return (
                         <Link
                           to={`/markets/${market.id}`}
                           key={market.id}
-                          className="market-card"
+                          className={`market-card ${isNewlyGenerated ? 'newly-generated' : ''}`}
                           style={{
                             width: `${size}px`,
                             minHeight: `${size}px`,
