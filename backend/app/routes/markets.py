@@ -25,8 +25,21 @@ def get_markets():
     total = markets_query.count()
     markets = markets_query.limit(limit).offset(offset).all()
     
+    # Include current odds for each market
+    markets_data = []
+    for market in markets:
+        market_dict = market.to_dict()
+        market_dict['current_odds'] = market.get_current_odds()
+        
+        # Include idea information if available
+        idea = Idea.query.get(market.idea_id)
+        if idea:
+            market_dict['idea'] = idea.to_dict()
+        
+        markets_data.append(market_dict)
+    
     return jsonify({
-        'markets': [market.to_dict() for market in markets],
+        'markets': markets_data,
         'total': total,
         'limit': limit,
         'offset': offset
@@ -180,6 +193,10 @@ def generate_market_from_keyword():
     except (ValueError, KeyError):
         close_date = None
     
+    # Get bid/ask prices from JSON
+    bid_price = selected_market.get('bid_price', 0.5)
+    ask_price = selected_market.get('ask_price', 0.5)
+    
     # Create Market entry
     market = Market(
         idea_id=idea.id,
@@ -191,16 +208,13 @@ def generate_market_from_keyword():
             'description': 'Resolved based on the outcome by the specified date.'
         }),
         status='active',
-        close_date=close_date
+        close_date=close_date,
+        bid_price=bid_price,
+        ask_price=ask_price
     )
     
     db.session.add(market)
     db.session.flush()  # Get the market ID before adding bets
-    
-    # Initialize market prices using bid/ask from JSON
-    # Create initial bets to set the market prices
-    bid_price = selected_market.get('bid_price', 0.5)  # Default to 50% if not provided
-    ask_price = selected_market.get('ask_price', 0.5)
     
     # Use the average of bid/ask as the initial YES price
     yes_price = (bid_price + ask_price) / 2

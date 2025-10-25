@@ -46,7 +46,9 @@ CREATE TABLE IF NOT EXISTS markets (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     close_date TIMESTAMP,
     resolved_at TIMESTAMP,
-    resolution_outcome VARCHAR(50)
+    resolution_outcome VARCHAR(50),
+    bid_price FLOAT,
+    ask_price FLOAT
 );
 
 -- Agents table

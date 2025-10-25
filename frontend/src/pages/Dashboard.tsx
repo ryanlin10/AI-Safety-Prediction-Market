@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Market } from '../types';
 import { Link } from 'react-router-dom';
@@ -51,26 +51,6 @@ const Dashboard: React.FC = () => {
       generateMarketMutation.mutate(keyword.trim());
     }
   };
-
-  // Fetch prices for all markets
-  const pricesQueries = useQueries({
-    queries: markets.map((market) => ({
-      queryKey: ['marketPrices', market.id],
-      queryFn: () => api.getMarketPrices(market.id),
-      enabled: markets.length > 0,
-    })),
-  });
-
-  // Create a map of market ID to prices
-  const pricesMap = useMemo(() => {
-    const map: Record<number, any> = {};
-    pricesQueries.forEach((query, index) => {
-      if (query.data?.data) {
-        map[markets[index].id] = query.data.data;
-      }
-    });
-    return map;
-  }, [pricesQueries, markets]);
 
   // Topic clustering and popularity calculation
   const { topicClusters, maxPopularity, rankedMarkets } = useMemo(() => {
@@ -251,22 +231,13 @@ const Dashboard: React.FC = () => {
                             
                             <div className="market-outcomes-votes">
                               {market.outcomes.map((outcome) => {
-                                // Get actual prices from API
-                                const marketPrices = pricesMap[market.id];
                                 const isYes = outcome.toLowerCase() === 'yes';
                                 const isNo = outcome.toLowerCase() === 'no';
                                 
-                                // Get the actual percentage from current_price (which represents probability)
+                                // Get the actual percentage from current_odds (which represents probability)
                                 let percentage = 50; // Default fallback
-                                if (marketPrices && marketPrices[outcome]) {
-                                  const currentPrice = marketPrices[outcome].current_price;
-                                  percentage = currentPrice * 100;
-                                } else if (market.outcomes.length === 2) {
-                                  // For binary markets, if we have one price, calculate the other
-                                  const otherOutcome = market.outcomes.find(o => o !== outcome);
-                                  if (otherOutcome && marketPrices && marketPrices[otherOutcome]) {
-                                    percentage = (1 - marketPrices[otherOutcome].current_price) * 100;
-                                  }
+                                if (market.current_odds && market.current_odds[outcome] !== undefined) {
+                                  percentage = market.current_odds[outcome] * 100;
                                 }
                                 
                                 return (

@@ -15,6 +15,8 @@ class Market(db.Model):
     close_date = db.Column(db.DateTime)
     resolved_at = db.Column(db.DateTime)
     resolution_outcome = db.Column(db.String(50))
+    bid_price = db.Column(db.Float)  # Initial bid price from JSON (for binary Yes/No markets)
+    ask_price = db.Column(db.Float)  # Initial ask price from JSON (for binary Yes/No markets)
     
     # Relationships
     bets = db.relationship('Bet', backref='market', lazy='dynamic')
@@ -46,14 +48,29 @@ class Market(db.Model):
         }
     
     def get_current_odds(self):
-        """Calculate current odds based on bets"""
+        """Get current odds - uses stored bid/ask prices if available, otherwise calculates from bets"""
         # Parse outcomes from JSON string
         try:
             outcomes = json.loads(self.outcomes) if isinstance(self.outcomes, str) else self.outcomes
         except:
             outcomes = self.outcomes
         
-        # Simple implementation: count bets per outcome
+        # If we have stored bid/ask prices (from JSON), use those for binary markets
+        if self.bid_price is not None and self.ask_price is not None and len(outcomes) == 2:
+            # Use the average of bid and ask for the YES price
+            yes_price = (self.bid_price + self.ask_price) / 2
+            no_price = 1.0 - yes_price
+            
+            # Assume first outcome is Yes, second is No
+            if outcomes[0].lower() == 'yes':
+                return {outcomes[0]: yes_price, outcomes[1]: no_price}
+            elif outcomes[0].lower() == 'no':
+                return {outcomes[0]: no_price, outcomes[1]: yes_price}
+            else:
+                # Fallback: assume first outcome is the "positive" one
+                return {outcomes[0]: yes_price, outcomes[1]: no_price}
+        
+        # Otherwise, calculate from bets
         outcome_stakes = {}
         for bet in self.bets:
             outcome_stakes[bet.outcome] = outcome_stakes.get(bet.outcome, 0) + bet.stake

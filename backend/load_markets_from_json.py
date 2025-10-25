@@ -78,6 +78,10 @@ def load_markets_from_json():
             # These are binary markets (Yes/No)
             outcomes = json.dumps(['Yes', 'No'])
             
+            # Get bid/ask prices from JSON
+            bid_price = market_data.get('bid_price', 0.5)
+            ask_price = market_data.get('ask_price', 0.5)
+            
             # Create the market
             market = Market(
                 idea_id=idea.id,
@@ -89,14 +93,12 @@ def load_markets_from_json():
                     'criteria': market_data['safety_reasoning']
                 }),
                 status='active',
-                close_date=close_date
+                close_date=close_date,
+                bid_price=bid_price,
+                ask_price=ask_price
             )
             db.session.add(market)
             db.session.flush()  # Get the market ID
-            
-            # Initialize market prices using bid/ask from JSON
-            bid_price = market_data.get('bid_price', 0.5)
-            ask_price = market_data.get('ask_price', 0.5)
             
             # Use the average of bid/ask as the initial YES price
             yes_price = (bid_price + ask_price) / 2
